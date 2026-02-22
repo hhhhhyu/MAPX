@@ -1,0 +1,1125 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>MIMIMEME - Trí Tuệ Định Tuyến Tiện Lợi</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+    
+    <style>
+        :root {
+            --primary-blue: #E3F2FD; --text-blue: #1565C0;
+            --warning-red: #FFEBEE; --text-red: #C62828;
+            --success-green: #E8F5E9; --text-green: #2E7D32;
+            --nature-green: #F1F8E9; --text-nature: #558B2F;
+            --sun-yellow: #FFF9C4; --text-sun: #F57F17;
+            --bg-gray: #F8F9FA; --white: #FFFFFF;
+            --highlight: #E65100;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Roboto', -apple-system, sans-serif; }
+        body { background-color: #e0e0e0; display: flex; justify-content: center; height: 100vh; height: 100dvh; overflow: hidden; }
+        .mobile-container { width: 100%; max-width: 414px; height: 100%; background-color: #E8EBE9; position: relative; overflow: hidden; box-shadow: 0 0 20px rgba(0,0,0,0.2); }
+        #mapScreen { width: 100%; height: 100%; position: absolute; top: 0; left: 0; z-index: 1; }
+        .leaflet-control-attribution { display: none !important; }
+
+        .highlight-text { color: var(--highlight); font-weight: bold; }
+
+        .my-location-marker { width: 16px; height: 16px; background: #1565C0; border-radius: 50%; border: 3px solid white; box-shadow: 0 0 10px rgba(0,0,0,0.3); position: relative; }
+        .my-location-marker::after { content: ''; position: absolute; top: -6px; left: -6px; right: -6px; bottom: -6px; background: rgba(21, 101, 192, 0.4); border-radius: 50%; animation: pulse 2s infinite; pointer-events: none; }
+        @keyframes pulse { 0% { transform: scale(0.8); opacity: 1; } 100% { transform: scale(2.5); opacity: 0; } }
+        
+        .my-location-label { color: #1565C0; font-size: 13px; font-weight: 700; position: absolute; top: 20px; left: 50%; transform: translateX(-50%); white-space: nowrap; pointer-events: none; text-shadow: -1.5px -1.5px 0 #fff, 1.5px -1.5px 0 #fff, -1.5px 1.5px 0 #fff, 1.5px 1.5px 0 #fff; background: transparent; padding: 0; box-shadow: none; }
+
+        .top-bar { position: absolute; top: 40px; left: 0; width: 100%; padding: 0 15px; z-index: 10; pointer-events: none; transition: 0.3s ease; }
+        .top-bar.hidden { transform: translateY(-150%); opacity: 0; }
+        .top-bar > * { pointer-events: auto; }
+        .search-box { background: var(--white); border-radius: 20px; padding: 12px 20px; display: flex; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 15px; }
+        .search-box input { border: none; outline: none; flex: 1; margin-left: 10px; font-size: 16px; }
+        
+        .routing-header { background: var(--white); border-radius: 15px; padding: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 15px; display: none; align-items: flex-start; gap: 10px; }
+        .routing-icons { display: flex; flex-direction: column; align-items: center; margin-top: 5px; gap: 8px;}
+        .routing-icons .dot { width: 8px; height: 8px; background: #1565C0; border-radius: 50%; } 
+        .routing-icons .line { width: 2px; height: 25px; background: #E0E0E0; }
+        .routing-icons .pin { color: #C62828; font-size: 14px; }
+        .routing-inputs { flex: 1; display: flex; flex-direction: column; gap: 10px; }
+        .route-input-box { background: #F5F5F5; padding: 10px; border-radius: 8px; font-size: 13px; font-weight: 500; color: #1565C0; }
+        .route-input-box.dest { background: #E3F2FD; color: #1565C0; font-weight: bold;}
+
+        .filter-chips { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 5px; scrollbar-width: none;}
+        .filter-chips::-webkit-scrollbar { display: none; }
+        .chip { background: var(--white); padding: 8px 15px; border-radius: 20px; font-size: 14px; font-weight: 500; white-space: nowrap; box-shadow: 0 2px 5px rgba(0,0,0,0.05); cursor: pointer; transition: 0.2s;}
+        .chip.active { background: var(--primary-blue); color: var(--text-blue); }
+
+        .floating-tools { position: absolute; right: 15px; top: 180px; display: flex; flex-direction: column; gap: 10px; z-index: 10; transition: 0.3s ease; }
+        .floating-tools.hidden { transform: translateX(150%); opacity: 0; }
+        .tool-btn { background: var(--white); width: 40px; height: 40px; border-radius: 50%; display: flex; justify-content: center; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.1); color: #424242; cursor: pointer; }
+        .floating-warning { position: absolute; top: 220px; left: 50%; transform: translateX(-50%); width: 90%; background: #FFEBEE; border-radius: 15px; padding: 12px 15px; display: none; align-items: center; gap: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.15); z-index: 25; border: 1px solid #FFCDD2; transition: 0.3s;}
+
+        .bottom-sheet { position: absolute; bottom: calc(70px + env(safe-area-inset-bottom)); left: 0; width: 100%; background: var(--white); border-radius: 25px 25px 0 0; padding: 15px 20px 20px; box-shadow: 0 -5px 15px rgba(0,0,0,0.1); z-index: 20; max-height: 45vh; overflow-y: auto; transition: transform 0.3s ease-in-out, max-height 0.3s ease-in-out; transform: translateY(0);}
+        .bottom-sheet.expanded { max-height: 85vh; }
+        .bottom-sheet.minimized { transform: translateY(calc(100% - 40px)); overflow: hidden; }
+        .bottom-sheet.hidden { transform: translateY(150%) !important; } 
+        .drag-handle-wrapper { position: sticky; top: -15px; background: var(--white); padding: 10px 0 15px; z-index: 21; display: flex; justify-content: center; margin: -15px -20px 15px; cursor: pointer; }
+        .drag-handle { width: 40px; height: 5px; background: #B0BEC5; border-radius: 5px; transition: 0.2s;}
+
+        .weather-banner { background: var(--primary-blue); padding: 15px; border-radius: 15px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;}
+        .traffic-card { background: white; border: 1px solid #E0E0E0; border-radius: 15px; padding: 15px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+        .t-header { display: flex; gap: 10px; align-items: center; margin-bottom: 10px; }
+        .t-icon { width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+        .t-desc { font-size: 13px; color: #424242; line-height: 1.5; margin-bottom: 12px; }
+        .t-btn { width: 100%; background: #F5F5F5; border: none; padding: 10px; border-radius: 10px; font-size: 13px; font-weight: bold; cursor: pointer; transition: 0.2s;}
+
+        .ai-input-area { background: #E3F2FD; border-radius: 15px; padding: 15px; border: 2px solid #90CAF9; position: relative;}
+        .ai-textarea { width: 100%; border: none; background: transparent; outline: none; font-size: 16px; min-height: 80px; color: #1565C0; line-height: 1.5; font-weight: 500;}
+        .ai-send-btn { background: var(--text-blue); color: white; width: 40px; height: 40px; border-radius: 50%; display: flex; justify-content: center; align-items: center; float: right; cursor: pointer; box-shadow: 0 4px 10px rgba(21,101,192,0.4); font-size: 18px; transition: 0.2s;}
+        .ai-send-btn:hover { transform: scale(1.1); }
+        .ai-condition-text { font-size: 12px; color: #2E7D32; display: block; margin-top: 5px; font-style: italic;}
+
+        .filter-section { margin-bottom: 18px; }
+        .filter-title { font-size: 12px; color: #757575; margin-bottom: 10px; font-weight: bold; text-transform: uppercase;}
+        .filter-options { display: flex; gap: 8px; flex-wrap: wrap; }
+        .filter-pill { padding: 8px 15px; background: #F5F5F5; border-radius: 20px; font-size: 13px; color: #424242; cursor: pointer; border: 1px solid #E0E0E0; transition: 0.2s; display: flex; align-items: center; gap: 6px; user-select: none;}
+        .filter-pill.active { background: #E3F2FD; color: #1565C0; border-color: #90CAF9; font-weight: bold;}
+        .apply-filter-btn { width: 100%; background: var(--text-blue); color: white; border: none; padding: 12px; border-radius: 12px; font-size: 14px; font-weight: bold; cursor: pointer; margin-top: 10px; box-shadow: 0 4px 10px rgba(21, 101, 192, 0.3); display: flex; justify-content: center; gap: 8px; align-items: center;}
+
+        .dynamic-tag { padding: 6px 12px; border-radius: 15px; font-size: 11px; font-weight: bold; display: flex; align-items: center; gap: 5px; white-space: nowrap;}
+        .tag-shop { background: #FFF3E0; color: #E65100; border: 1px solid #FFE0B2; }
+        .tag-shop.mandatory { border: 2px solid #E65100; background: #FFE0B2; color: #BF360C; }
+        .tag-vehicle { background: #E3F2FD; color: #1565C0; border: 1px solid #BBDEFB; }
+        .tag-avoid { background: #E8F5E9; color: #2E7D32; border: 1px solid #C8E6C9; }
+        .tag-danger { background: #FFEBEE; color: #C62828; border: 1px solid #FFCDD2; }
+        .tag-nature { background: var(--nature-green); color: var(--text-nature); border: 1px solid #DCEDC8; }
+        .tag-sun { background: var(--sun-yellow); color: var(--text-sun); border: 1px solid #FFF59D; }
+
+        .route-card { display: flex; gap: 12px; padding: 12px; background: white; border-radius: 12px; border: 2px solid #E0E0E0; margin-bottom: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); cursor: pointer; transition: 0.2s;}
+        .route-card.active { border-color: var(--text-blue); background: var(--primary-blue); }
+        .route-card.alert-border { border-color: #C62828; } 
+        .route-time { font-size: 22px; font-weight: bold; color: var(--text-blue); transition: 0.2s;}
+        .route-card:not(.active) .route-time { color: #757575; }
+        .pro-con { font-size: 12px; margin-top: 5px; display: flex; align-items: flex-start; gap: 5px;}
+        .pro-con i { margin-top: 2px; }
+        .pro { color: var(--text-green); }
+        .con { color: var(--text-red); }
+        .warn { color: #E65100; font-weight: bold;}
+        .time-badge { background: var(--text-blue); color: white; padding: 5px 12px; border-radius: 20px; font-weight: bold; font-size: 13px; box-shadow: 0 2px 8px rgba(0,0,0,0.4); white-space: nowrap; border: 2px solid white; cursor: pointer; transition: 0.2s; pointer-events: auto;}
+        .time-badge.alt { background: #757575; opacity: 0.8;}
+        .time-badge.danger { background: #C62828; }
+
+        /* NÚT BẮT ĐẦU DẪN ĐƯỜNG DỊU MẮT */
+        .start-nav-btn { background: #2E7D32; color: white; width: 100%; padding: 12px; border-radius: 12px; text-align: center; font-weight: bold; font-size: 14px; box-shadow: 0 4px 10px rgba(46, 125, 50, 0.3); margin-top: 10px; cursor: pointer; display: none;}
+        
+        /* OVERLAY GIAO DIỆN LÁI XE */
+        .nav-top-banner { position: absolute; top: env(safe-area-inset-top, 15px); left: 15px; right: 15px; background: #2E7D32; color: white; padding: 15px; border-radius: 15px; display: none; align-items: center; gap: 15px; z-index: 50; box-shadow: 0 4px 15px rgba(0,0,0,0.2); transition: 0.3s;}
+        .nav-direction-icon { font-size: 26px; }
+        .nav-instruction { flex: 1; }
+        .nav-instruction h2 { font-size: 18px; margin: 0 0 5px 0; }
+        .nav-instruction p { font-size: 13px; margin: 0; opacity: 0.9; }
+
+        .nav-bottom-banner { position: absolute; bottom: calc(15px + env(safe-area-inset-bottom)); left: 15px; right: 15px; background: white; padding: 15px; border-radius: 15px; display: none; justify-content: space-between; align-items: center; z-index: 50; box-shadow: 0 -2px 15px rgba(0,0,0,0.1); transition: 0.3s;}
+        .nav-stats h1 { font-size: 22px; color: #2E7D32; margin: 0 0 3px 0; font-weight: bold;}
+        .nav-stats p { font-size: 13px; color: #757575; margin: 0;}
+        .end-nav-btn { background: #FFEBEE; color: #C62828; padding: 10px 15px; border-radius: 10px; font-weight: bold; font-size: 13px; border: none; cursor: pointer;}
+
+        #placeDetailsContent { padding-bottom: 20px; }
+        .menu-scroll { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 10px; scrollbar-width: none; }
+        .menu-scroll::-webkit-scrollbar { display: none; }
+        .menu-item { min-width: 120px; border: 1px solid #E0E0E0; border-radius: 10px; padding: 10px; text-align: center; }
+
+        /* CÀI ĐẶT (NHÓM A+) */
+        .settings-screen { position: absolute; top: 0; left: 0; width: 100%; height: calc(100% - 70px - env(safe-area-inset-bottom)); background: #F5F5F5; z-index: 28; display: none; overflow-y: auto; padding-bottom: 20px;}
+        .set-header { background: white; padding: 40px 20px 15px; text-align: center; position: sticky; top: 0; z-index: 29; box-shadow: 0 2px 5px rgba(0,0,0,0.05);}
+        .set-card { background: white; margin: 15px; border-radius: 15px; padding: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.02);}
+        .set-title { font-size: 15px; color: #1565C0; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid #F5F5F5; padding-bottom: 8px;}
+        .team-badge { background: #FFF3E0; color: #E65100; border: 1px solid #FFE0B2; padding: 15px; border-radius: 12px; text-align: center; margin-top: 10px;}
+
+        /* Cộng đồng */
+        .community-screen { position: absolute; top: 0; left: 0; width: 100%; height: calc(100% - 70px - env(safe-area-inset-bottom)); background: #F5F5F5; z-index: 28; display: none; overflow-y: auto; padding-bottom: 20px;}
+        .comm-header { background: white; padding: 40px 20px 15px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 29; box-shadow: 0 2px 5px rgba(0,0,0,0.05);}
+        .comm-tabs { display: flex; background: white; border-bottom: 1px solid #E0E0E0;}
+        .c-tab { flex: 1; text-align: center; padding: 12px; font-size: 14px; font-weight: bold; color: #757575; border-bottom: 2px solid transparent; cursor: pointer;}
+        .c-tab.active { color: var(--text-blue); border-bottom-color: var(--text-blue); }
+        .post-card { background: white; margin: 15px; border-radius: 15px; padding: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);}
+        .post-actions { display: flex; justify-content: space-around; color: #757575; font-size: 14px; margin-top: 15px; border-top: 1px solid #F5F5F5; padding-top: 10px;}
+        .action-btn { display: flex; gap: 5px; align-items: center; cursor: pointer; transition: 0.2s;}
+        .action-btn:hover { color: var(--text-blue); }
+        .action-btn.liked { color: #E91E63; }
+        .comments-section { display: none; margin-top: 15px; border-top: 1px dashed #E0E0E0; padding-top: 15px;}
+        .comment-item { display: flex; gap: 10px; margin-bottom: 12px; font-size: 13px;}
+        .cmt-avatar { width: 28px; height: 28px; background: #E0E0E0; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 11px; color: #757575; flex-shrink: 0;}
+        .cmt-bubble { background: #F5F5F5; padding: 8px 12px; border-radius: 15px; flex: 1; line-height: 1.4;}
+        .cmt-bubble strong { display: block; margin-bottom: 2px; color: #424242;}
+        .comment-input-area { display: flex; gap: 10px; align-items: center; margin-top: 10px; background: #F5F5F5; border-radius: 20px; padding: 5px 15px;}
+        .comment-input-area input { flex: 1; border: none; background: transparent; outline: none; font-size: 13px; padding: 5px 0;}
+        
+        .bottom-nav { position: absolute; bottom: 0; left: 0; width: 100%; height: calc(70px + env(safe-area-inset-bottom)); padding-bottom: env(safe-area-inset-bottom); background: var(--white); display: flex; justify-content: space-around; align-items: center; z-index: 30; border-top: 1px solid #E0E0E0; transition: 0.3s ease; }
+        .bottom-nav.hidden { transform: translateY(150%); opacity: 0; pointer-events: none;}
+        .nav-item { display: flex; flex-direction: column; align-items: center; color: #78909C; font-size: 12px; gap: 5px; cursor: pointer; width: 60px; transition: 0.2s;}
+        .nav-item.active { color: var(--text-blue); font-weight: bold; }
+        .nav-item i { font-size: 20px; margin-bottom: 2px;}
+    </style>
+</head>
+<body>
+
+    <div class="mobile-container">
+        <div id="mapScreen"></div>
+
+        <div class="nav-top-banner" id="navTopBanner">
+            <div class="nav-direction-icon"><i class="fa-solid fa-arrow-turn-up"></i></div>
+            <div class="nav-instruction">
+                <h2>Đi thẳng 500m</h2>
+                <p>Sau đó rẽ phải vào đường Nguyễn Tri Phương</p>
+            </div>
+        </div>
+
+        <div class="nav-bottom-banner" id="navBottomBanner">
+            <div class="nav-stats">
+                <h1 id="navETA">28p</h1>
+                <p id="navDist">5.1 km • Tới lúc 10:45</p>
+            </div>
+            <button class="end-nav-btn" onclick="endNavigation()"><i class="fa-solid fa-xmark"></i> Kết thúc</button>
+        </div>
+
+        <div class="top-bar" id="topBar">
+            <div class="search-box" id="defaultSearch">
+                <i class="fa-solid fa-magnifying-glass"></i><input type="text" placeholder="Tìm kiếm địa điểm...">
+            </div>
+            <div class="routing-header" id="routingHeader">
+                <i class="fa-solid fa-arrow-left" style="margin-top: 10px; font-size: 18px; color: #424242; cursor: pointer;" onclick="switchTopMode('khamPha')"></i>
+                <div class="routing-icons"><div class="dot"></div><div class="line"></div><i class="fa-solid fa-location-dot pin"></i></div>
+                <div class="routing-inputs">
+                    <div class="route-input-box">Vị trí của bạn</div>
+                    <div class="route-input-box dest" id="dynamicDestName">Đang tải...</div> 
+                </div>
+            </div>
+            <div class="filter-chips">
+                <div class="chip active" id="chipKhamPha" onclick="switchTopMode('khamPha')">Khám phá</div>
+                <div class="chip" id="chipAI" onclick="switchTopMode('ai')"><i class="fa-solid fa-robot"></i> Chế độ AI</div>
+                <div class="chip" id="chipTuyChinh" onclick="switchTopMode('tuyChinh')"><i class="fa-solid fa-sliders"></i> Tùy chỉnh</div>
+            </div>
+        </div>
+
+        <div class="floating-tools" id="floatingTools">
+            <div class="tool-btn"><i class="fa-solid fa-layer-group"></i></div>
+            <div class="tool-btn" onclick="goToMyLocation()"><i class="fa-solid fa-location-crosshairs" style="color: #1565C0;"></i></div>
+        </div>
+        
+        <div class="floating-warning" id="warningPopup">
+            <i class="fa-solid fa-triangle-exclamation" style="color: #C62828; font-size: 18px;"></i>
+            <div style="flex: 1;">
+                <p id="warningText" style="margin: 0; font-size: 13px; color: #C62828;">Cảnh báo hệ thống.</p>
+                <span style="font-size: 11px; color: #1565C0; font-weight: bold; cursor: pointer; display: inline-block; margin-top: 3px;" onclick="switchNav('traffic')">Xem chi tiết Giao thông &raquo;</span>
+            </div>
+            <i class="fa-solid fa-xmark close-btn" style="color: #C62828; cursor: pointer;" onclick="this.parentElement.style.display='none'"></i>
+        </div>
+
+        <div class="bottom-sheet" id="sheetHome">
+            <div class="drag-handle-wrapper" onclick="toggleExpand(this)"><div class="drag-handle"></div></div>
+            <p style="font-size: 12px; color: gray; margin-bottom: 10px;">Thời tiết tại vị trí của bạn</p>
+            <div class="weather-banner">
+                <div style="display: flex; gap: 15px; align-items: center;"><i class="fa-solid fa-cloud" style="font-size: 30px; color: #64B5F6;"></i><div><h2 style="font-size: 22px; color: #1565C0;">27°C</h2><p style="font-size: 12px; color: #1976D2;">Nhiều mây</p></div></div>
+                <div style="font-size: 12px; color: #1976D2; text-align: right;">Độ ẩm<br><strong>80%</strong></div>
+            </div>
+            <h3 style="font-size: 14px; margin: 15px 0 10px; color: #424242;">Các cảnh báo gần đây</h3>
+            <div style="background: var(--warning-red); border-radius: 12px; padding: 12px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.02);">
+                <div>
+                    <h4 style="color: var(--text-red); font-size: 13px; margin: 0 0 5px 0;"><i class="fa-solid fa-car-burst"></i> Kẹt xe (Nặng)</h4>
+                    <p style="font-size: 11px; color: gray; margin: 0; line-height: 1.4;">Vòng xoay Lăng Cha Cả</p>
+                </div>
+                <button style="background: var(--text-red); color: white; border: none; padding: 6px 12px; border-radius: 12px; font-size: 11px; font-weight: bold; cursor: pointer; margin-left: 10px;" onclick="switchNav('traffic')">Chi tiết</button>
+            </div>
+            <div style="background: #E3F2FD; border-radius: 12px; padding: 12px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.02);">
+                <div>
+                    <h4 style="color: #1565C0; font-size: 13px; margin: 0 0 5px 0;"><i class="fa-solid fa-water"></i> Ngập lụt (Nhẹ)</h4>
+                    <p style="font-size: 11px; color: gray; margin: 0; line-height: 1.4;">QL50 giao Nguyễn Văn Linh</p>
+                </div>
+                <button style="background: #1565C0; color: white; border: none; padding: 6px 12px; border-radius: 12px; font-size: 11px; font-weight: bold; cursor: pointer; margin-left: 10px;" onclick="switchNav('traffic')">Chi tiết</button>
+            </div>
+        </div>
+
+        <div class="bottom-sheet hidden" id="sheetTraffic">
+            <div class="drag-handle-wrapper" onclick="toggleExpand(this)"><div class="drag-handle"></div></div>
+            <h3 style="font-size: 16px; margin-bottom: 15px; color: #1565C0;"><i class="fa-solid fa-satellite-dish"></i> Dữ liệu Giao thông Thực tế</h3>
+            <div class="traffic-card" style="background: #FAFAFA;">
+                <div class="t-header"><div class="t-icon" style="background: #E3F2FD; color: #1565C0;"><i class="fa-solid fa-water"></i></div><div><h4 style="margin:0; font-size:14px; color:#1565C0;">Ngập lụt - Mức độ Nhẹ</h4><div style="font-size:11px; color:gray;">QL50 giao Nguyễn Văn Linh</div></div></div>
+                <div class="t-desc"><p><strong>Lượng mưa: 72mm</strong> (Kéo dài 17p)</p><p style="margin-top: 5px;"><strong>Ảnh hưởng:</strong> Không có khả năng làm chết máy xe.</p></div>
+            </div>
+            <div class="traffic-card">
+                <div class="t-header"><div class="t-icon" style="background: #FFEBEE; color: #C62828;"><i class="fa-solid fa-car-burst"></i></div><div><h4 style="margin:0; font-size:14px; color:#C62828;">Kẹt xe nghiêm trọng</h4><div style="font-size:11px; color:gray;">Vòng xoay Lăng Cha Cả</div></div></div>
+                <div class="t-desc"><p>Đoạn đường thường xảy ra kẹt xe kéo dài vào khung giờ <strong>16h-18h</strong>. Các phương tiện di chuyển chậm.</p></div>
+            </div>
+        </div>
+
+        <div class="bottom-sheet hidden expanded" id="sheetTuyChinh">
+            <div class="drag-handle-wrapper" onclick="toggleExpand(this)"><div class="drag-handle"></div></div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <h3 style="font-size: 16px; margin: 0;">Bộ lọc & Tùy chỉnh chi tiết <i class="fa-solid fa-sliders"></i></h3>
+                <span style="font-size: 13px; color: #C62828; cursor: pointer; font-weight: 500;" onclick="resetFilters()">Reset</span>
+            </div>
+
+            <div class="filter-section">
+                <h4 class="filter-title">Phương tiện</h4>
+                <div class="filter-options" id="filterTransport">
+                    <div class="filter-pill active" onclick="toggleRadioPill(this)"><i class="fa-solid fa-motorcycle"></i> Xe máy</div>
+                    <div class="filter-pill" onclick="toggleRadioPill(this)"><i class="fa-solid fa-car"></i> Ô tô</div>
+                    <div class="filter-pill" onclick="toggleRadioPill(this)"><i class="fa-solid fa-bus"></i> Xe buýt</div>
+                </div>
+            </div>
+
+            <div class="filter-section">
+                <h4 class="filter-title">Môi trường & Trải nghiệm (Nâng cao)</h4>
+                <div class="filter-options">
+                    <div class="filter-pill" onclick="this.classList.toggle('active')"><i class="fa-solid fa-tree"></i> Đường nhiều cây xanh</div>
+                    <div class="filter-pill" onclick="this.classList.toggle('active')"><i class="fa-solid fa-sun"></i> Tránh nắng gắt</div>
+                    <div class="filter-pill" onclick="this.classList.toggle('active')"><i class="fa-solid fa-traffic-light"></i> Ít đèn đỏ</div>
+                    <div class="filter-pill" onclick="this.classList.toggle('active')"><i class="fa-solid fa-gas-pump"></i> Ghé trạm xăng</div>
+                </div>
+            </div>
+
+            <div class="filter-section">
+                <h4 class="filter-title">Tuyến đường né tránh</h4>
+                <div class="filter-options">
+                    <div class="filter-pill active" id="f_avoidFlood" onclick="this.classList.toggle('active')"><i class="fa-solid fa-water"></i> Tránh ngập lụt</div>
+                    <div class="filter-pill active" id="f_avoidTraffic" onclick="this.classList.toggle('active')"><i class="fa-solid fa-car-burst"></i> Tránh kẹt xe</div>
+                    <div class="filter-pill" onclick="this.classList.toggle('active')"><i class="fa-solid fa-road"></i> Tránh hẻm nhỏ</div>
+                    <div class="filter-pill" onclick="this.classList.toggle('active')"><i class="fa-solid fa-money-bill"></i> Tránh thu phí</div>
+                    <div class="filter-pill" onclick="this.classList.toggle('active')"><i class="fa-solid fa-ship"></i> Tránh phà</div>
+                    <div class="filter-pill" onclick="this.classList.toggle('active')"><i class="fa-solid fa-road-spikes"></i> Tránh đường gồ ghề</div>
+                </div>
+            </div>
+
+            <button class="apply-filter-btn" onclick="applyFiltersAndSwitchToAI()"><i class="fa-solid fa-wand-magic-sparkles"></i> Lên lộ trình AI theo bộ lọc</button>
+            <div style="height: 20px;"></div>
+        </div>
+
+        <div class="bottom-sheet hidden expanded" id="sheetAI">
+            <div class="drag-handle-wrapper" onclick="toggleExpand(this)"><div class="drag-handle"></div></div>
+            <div style="text-align: center;"><i class="fa-solid fa-robot" style="font-size: 30px; color: var(--text-blue); margin-bottom: 10px;"></i><h3 style="margin-bottom: 15px; font-size: 16px;">AI Xử lý Ngôn ngữ Tự nhiên</h3></div>
+            <p style="font-size: 12px; color: gray; margin-bottom: 10px; text-align: center;">Mẹo: Gõ "mua matcha latte", AI sẽ tự tìm quán tiện đường nhất.</p>
+            
+            <div class="ai-input-area">
+                <div class="ai-textarea" id="aiPromptBox" contenteditable="true">Đến UEH Cơ sở A muốn mua matcha latte trên đường đi, dưới 40 phút</div>
+                <span class="ai-condition-text" id="aiInjectedConditions"><i class="fa-solid fa-wand-sparkles"></i> AI sẽ tự động phân tích menu và chọn quán...</span>
+                <div style="overflow: hidden; margin-top: 15px;"><div class="ai-send-btn" onclick="parseAndRouteAI()"><i class="fa-solid fa-arrow-up"></i></div></div>
+            </div>
+        </div>
+
+        <div class="bottom-sheet hidden" id="sheetAIFilter">
+            <div class="drag-handle-wrapper" onclick="toggleExpand(this)"><div class="drag-handle"></div></div>
+            <h3 style="font-size: 14px; margin-bottom: 10px; color: gray;">AI đã kết hợp tùy chỉnh & yêu cầu:</h3>
+            <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 15px; overflow-x: auto; padding-bottom: 5px;" id="dynamicTagsContainer"></div>
+            
+            <h3 style="font-size: 15px; margin-bottom: 10px; color: #424242;">Lộ trình Đề xuất</h3>
+            <p style="font-size: 11px; color: #1565C0; margin-top: -5px; margin-bottom: 10px;">💡 Bấm vào Lộ trình (đường kẻ) để xem lại danh sách này.</p>
+            <div id="dynamicRoutesContainer"></div>
+
+            <div class="start-nav-btn" id="startNavBtn" onclick="startNavigation()"><i class="fa-solid fa-location-arrow"></i> Bắt đầu Dẫn đường</div>
+        </div>
+
+        <div class="bottom-sheet hidden" id="sheetPlaceDetails">
+            <div class="drag-handle-wrapper" onclick="toggleExpand(this)"><div class="drag-handle"></div></div>
+            <div id="placeDetailsContent"></div>
+        </div>
+
+        <div class="community-screen" id="communityScreen">
+            <div class="comm-header">
+                <i class="fa-solid fa-bell" style="font-size: 20px; color: #424242;"></i><h2 style="font-size: 18px;">Cộng đồng Giao thông</h2><i class="fa-solid fa-pen-to-square" style="font-size: 20px; color: #1565C0;"></i>
+            </div>
+            
+            <div class="comm-tabs">
+                <div class="c-tab active" id="tabBtnBangTin" onclick="switchCommTab('bangTin')">Bảng tin</div>
+                <div class="c-tab" id="tabBtnGanToi" onclick="switchCommTab('ganToi')">Gần tôi</div>
+            </div>
+
+            <div id="contentBangTin">
+                <div class="post-card" id="post1">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                        <div style="display: flex; gap: 10px; align-items: center;"><div style="width: 40px; height: 40px; background: #FFE0B2; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #E65100; font-weight: bold;">MT</div><div><strong style="font-size: 14px;">Minh Tran <i class="fa-solid fa-circle-check" style="color: #1976D2;"></i></strong><div style="font-size: 11px; color: gray;">QL50 • Vừa xong</div></div></div>
+                        <div style="background: #E3F2FD; color: #1565C0; padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: bold;"><i class="fa-solid fa-water"></i> Ngập lụt</div>
+                    </div>
+                    <p style="font-size: 13px; line-height: 1.4;">Mưa lớn ở QL50 giao Nguyễn Văn Linh, ngập hơn nửa bánh xe. Mọi người chú ý lộ trình nhé!</p>
+                    <img src="https://images.unsplash.com/photo-1541897813-8b770eb0e527?auto=format&fit=crop&q=80&w=400&h=150" style="width: 100%; border-radius: 10px; margin-top: 10px;" alt="Ngập">
+                    <div class="post-actions">
+                        <div class="action-btn liked" onclick="this.classList.toggle('liked')"><i class="fa-solid fa-heart"></i> 45</div>
+                        <div class="action-btn" onclick="toggleComments('post1')"><i class="fa-regular fa-comment"></i> <span id="count-post1">2</span></div>
+                        <div class="action-btn"><i class="fa-solid fa-share"></i> Chia sẻ</div>
+                    </div>
+                    <div class="comments-section" id="comments-post1">
+                        <div id="list-post1">
+                            <div class="comment-item"><div class="cmt-avatar" style="background:#C8E6C9; color:#2E7D32;">H</div><div class="cmt-bubble"><strong>Hoàng Phúc</strong>Cảm ơn bác.</div></div>
+                            <div class="comment-item"><div class="cmt-avatar" style="background:#F48FB1; color:#C2185B;">L</div><div class="cmt-bubble"><strong>Linh Nga</strong>Xe tay ga qua được không ạ?</div></div>
+                        </div>
+                        <div class="comment-input-area"><input type="text" id="input-post1" placeholder="Viết bình luận..."><i class="fa-solid fa-paper-plane" style="color: #1565C0; cursor: pointer; padding: 5px;" onclick="addComment('post1')"></i></div>
+                    </div>
+                </div>
+
+                <div class="post-card" id="post2">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                        <div style="display: flex; gap: 10px; align-items: center;"><div style="width: 40px; height: 40px; background: #E8F5E9; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #2E7D32; font-weight: bold;">AL</div><div><strong style="font-size: 14px;">Anh Lê</strong><div style="font-size: 11px; color: gray;">Lăng Cha Cả • 15 phút trước</div></div></div>
+                        <div style="background: #FFEBEE; color: #C62828; padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: bold;"><i class="fa-solid fa-car-burst"></i> Kẹt xe nặng</div>
+                    </div>
+                    <p style="font-size: 13px; line-height: 1.4;">Kẹt xe cứng ngắc khúc công viên Hoàng Văn Thụ, hướng vào vòng xoay Lăng Cha Cả.</p>
+                    <img src="https://images.unsplash.com/photo-1552831388-6a0b3507732a?auto=format&fit=crop&q=80&w=400&h=150" style="width: 100%; border-radius: 10px; margin-top: 10px;" alt="Kẹt">
+                    <div class="post-actions">
+                        <div class="action-btn" onclick="this.classList.toggle('liked')"><i class="fa-solid fa-heart"></i> 12</div>
+                        <div class="action-btn" onclick="toggleComments('post2')"><i class="fa-regular fa-comment"></i> <span id="count-post2">1</span></div>
+                        <div class="action-btn"><i class="fa-solid fa-share"></i> Chia sẻ</div>
+                    </div>
+                    <div class="comments-section" id="comments-post2">
+                        <div id="list-post2">
+                            <div class="comment-item"><div class="cmt-avatar" style="background:#FFE0B2; color:#E65100;">T</div><div class="cmt-bubble"><strong>Tiến Đạt</strong>Căng vậy, đang tính đi qua đó. Cảm ơn bro.</div></div>
+                        </div>
+                        <div class="comment-input-area"><input type="text" id="input-post2" placeholder="Viết bình luận..."><i class="fa-solid fa-paper-plane" style="color: #1565C0; cursor: pointer; padding: 5px;" onclick="addComment('post2')"></i></div>
+                    </div>
+                </div>
+                
+                <div class="post-card" id="post3">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                        <div style="display: flex; gap: 10px; align-items: center;"><div style="width: 40px; height: 40px; background: #E1BEE7; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #6A1B9A; font-weight: bold;">NH</div><div><strong style="font-size: 14px;">Ngọc Hà</strong><div style="font-size: 11px; color: gray;">Quận 1 • 45 phút trước</div></div></div>
+                        <div style="background: #FFF3E0; color: #E65100; padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: bold;"><i class="fa-solid fa-triangle-exclamation"></i> Chướng ngại vật</div>
+                    </div>
+                    <p style="font-size: 13px; line-height: 1.4;">Cây đổ cản 1 nửa làn đường Lê Duẩn. Giao thông di chuyển cực kỳ chậm.</p>
+                    <div class="post-actions">
+                        <div class="action-btn" onclick="this.classList.toggle('liked')"><i class="fa-solid fa-heart"></i> 89</div>
+                        <div class="action-btn" onclick="toggleComments('post3')"><i class="fa-regular fa-comment"></i> <span id="count-post3">1</span></div>
+                        <div class="action-btn"><i class="fa-solid fa-share"></i> Chia sẻ</div>
+                    </div>
+                    <div class="comments-section" id="comments-post3"><div id="list-post3"><div class="comment-item"><div class="cmt-avatar" style="background:#B3E5FC; color:#0277BD;">T</div><div class="cmt-bubble"><strong>Trần Tuấn</strong>Đi cẩn thận nhé mọi người.</div></div></div><div class="comment-input-area"><input type="text" id="input-post3" placeholder="Viết bình luận..."><i class="fa-solid fa-paper-plane" style="color: #1565C0; cursor: pointer; padding: 5px;" onclick="addComment('post3')"></i></div></div>
+                </div>
+            </div>
+
+            <div id="contentGanToi" style="display: none;">
+                <div class="post-card" id="post4">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                        <div style="display: flex; gap: 10px; align-items: center;"><div style="width: 40px; height: 40px; background: #E1BEE7; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #6A1B9A; font-weight: bold;">HA</div><div><strong style="font-size: 14px;">Hoàng Anh <i class="fa-solid fa-circle-check" style="color: #1565C0;"></i></strong><div style="font-size: 11px; color: gray;">Quận 10 • 2 phút trước</div></div></div>
+                        <div style="background: #FFF3E0; color: #E65100; padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: bold;"><i class="fa-solid fa-triangle-exclamation"></i> Lô cốt</div>
+                    </div>
+                    <p style="font-size: 13px; line-height: 1.4;">Đường 3 tháng 2 ngay gần ĐH Kinh Tế mới dựng lô cốt to đùng. Xe di chuyển chậm, ai đi học nhớ đi sớm nhé.</p>
+                    <div class="post-actions">
+                        <div class="action-btn" onclick="this.classList.toggle('liked')"><i class="fa-solid fa-heart"></i> 24</div>
+                        <div class="action-btn" onclick="toggleComments('post4')"><i class="fa-regular fa-comment"></i> <span id="count-post4">1</span></div>
+                        <div class="action-btn"><i class="fa-solid fa-share"></i> Chia sẻ</div>
+                    </div>
+                    <div class="comments-section" id="comments-post4">
+                        <div id="list-post4">
+                            <div class="comment-item"><div class="cmt-avatar" style="background:#B3E5FC; color:#0277BD;">Q</div><div class="cmt-bubble"><strong>Quốc Huy</strong>Trời ơi đi học trễ luôn rồi.</div></div>
+                        </div>
+                        <div class="comment-input-area"><input type="text" id="input-post4" placeholder="Viết bình luận..."><i class="fa-solid fa-paper-plane" style="color: #1565C0; cursor: pointer; padding: 5px;" onclick="addComment('post4')"></i></div>
+                    </div>
+                </div>
+            </div>
+
+            <div style="height: 50px;"></div>
+        </div>
+
+        <div class="settings-screen" id="settingsScreen">
+            <div class="set-header">
+                <h2 style="font-size: 22px; color: #424242; margin-bottom: 5px;">Cài đặt & Thông tin</h2>
+                <p style="font-size: 13px; color: #757575;">Quản lý ứng dụng MIMIMEME</p>
+            </div>
+            <div class="set-card">
+                <h3 class="set-title"><i class="fa-solid fa-book-open"></i> Hướng dẫn dùng AI</h3>
+                <p style="font-size: 13px; color: #424242; line-height: 1.6; margin-bottom: 10px;">Cấu trúc câu lệnh chuẩn xác nhất:</p>
+                <div style="background: #E3F2FD; padding: 12px; border-radius: 12px; font-size: 13px; color: #1565C0; margin-bottom: 15px;">
+                    <strong>[Đến/Tới]</strong> + Đích đến + <strong>[Ghé/Qua]</strong> + Điểm dừng + <strong>[Dưới/Trong]</strong> + Số phút.
+                </div>
+                <ul style="font-size: 12px; color: #757575; padding-left: 20px; line-height: 1.6;">
+                    <li><em>"Tới UEH Cơ sở B, ghé Aeon Mall dưới 45 phút"</em></li>
+                    <li>Thêm từ <strong style="color: #C62828;">"Bắt buộc"</strong> trước địa điểm để ưu tiên.</li>
+                </ul>
+            </div>
+            <div class="set-card">
+                <h3 class="set-title"><i class="fa-solid fa-map-location-dot"></i> Địa điểm Hỗ trợ</h3>
+                <p style="font-size: 13px; color: #424242; margin-bottom: 10px;">AI tự động chọn chi nhánh gần nhất:</p>
+                <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                    <span style="background: #F5F5F5; padding: 5px 10px; border-radius: 15px; font-size: 11px; color: #424242;">UEH (A, B, C, N...)</span>
+                    <span style="background: #F5F5F5; padding: 5px 10px; border-radius: 15px; font-size: 11px; color: #424242;">Ngô Gia, Katinat, Phúc Long, Phê La, Koi Thé</span>
+                    <span style="background: #F5F5F5; padding: 5px 10px; border-radius: 15px; font-size: 11px; color: #424242;">Bách Hóa Xanh, Aeon, Vincom</span>
+                    <span style="background: #F5F5F5; padding: 5px 10px; border-radius: 15px; font-size: 11px; color: #424242;">Haidilao, KFC, McDonald's, Gogi, Kichi</span>
+                    <span style="background: #F5F5F5; padding: 5px 10px; border-radius: 15px; font-size: 11px; color: #424242;">Landmark 81, Sân bay...</span>
+                </div>
+            </div>
+            <div class="set-card" style="text-align: center; border: 2px solid #FFEBEE;">
+                <i class="fa-solid fa-heart" style="font-size: 35px; color: #C62828; margin-bottom: 10px;"></i>
+                <h3 style="font-size: 16px; margin-bottom: 5px;">Lời Cảm Ơn</h3>
+                <p style="font-size: 13px; color: #757575; line-height: 1.6;">Cảm ơn bạn đã trải nghiệm ứng dụng. Sản phẩm được thiết kế với tất cả tâm huyết.</p>
+                <div class="team-badge"><div style="font-size: 11px; text-transform: uppercase;">Phát triển bởi</div><div style="font-size: 24px; font-weight: 900;">NHÓM A+</div></div>
+            </div>
+            <div style="height: 50px;"></div>
+        </div>
+
+        <div class="bottom-nav" id="bottomNav">
+            <div class="nav-item active" id="navHome" onclick="switchNav('home')"><i class="fa-solid fa-house"></i><span>Trang chủ</span></div>
+            <div class="nav-item" id="navTraffic" onclick="switchNav('traffic')"><i class="fa-solid fa-route"></i><span>Giao thông</span></div>
+            <div class="nav-item" id="navCommunity" onclick="switchNav('community')"><i class="fa-solid fa-users"></i><span>Cộng đồng</span></div>
+            <div class="nav-item" id="navSettings" onclick="switchNav('settings')"><i class="fa-solid fa-gear"></i><span>Cài đặt</span></div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        // Load Google Map font
+        var link = document.createElement('link');
+        link.href = 'https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap';
+        link.rel = 'stylesheet';
+        document.head.appendChild(link);
+
+        // --- CHUYỂN ĐỔI THỜI GIAN THÔNG MINH ---
+        function formatTime(minutes) {
+            if (!minutes) return "0p";
+            if (minutes < 60) return minutes + 'p';
+            let h = Math.floor(minutes / 60);
+            let m = minutes % 60;
+            return m > 0 ? h + 'h ' + m + 'p' : h + 'h';
+        }
+
+        function toggleComments(postId) {
+            const cmtSection = document.getElementById('comments-' + postId);
+            cmtSection.style.display = (cmtSection.style.display === 'none' || cmtSection.style.display === '') ? 'block' : 'none';
+        }
+        function addComment(postId) {
+            const inputField = document.getElementById('input-' + postId);
+            if (inputField && inputField.value.trim() !== '') {
+                const newCmt = document.createElement('div');
+                newCmt.className = 'comment-item';
+                newCmt.innerHTML = `<div class="cmt-avatar" style="background:#E3F2FD; color:#1565C0;">B</div><div class="cmt-bubble"><strong>Bạn</strong>${inputField.value.trim()}</div>`;
+                document.getElementById('list-' + postId).appendChild(newCmt);
+                document.getElementById('count-' + postId).innerText = parseInt(document.getElementById('count-' + postId).innerText) + 1;
+                inputField.value = '';
+            }
+        }
+        
+        function switchCommTab(tab) {
+            document.getElementById('tabBtnBangTin').classList.remove('active');
+            document.getElementById('tabBtnGanToi').classList.remove('active');
+            document.getElementById('contentBangTin').style.display = 'none';
+            document.getElementById('contentGanToi').style.display = 'none';
+            
+            if(tab === 'bangTin') {
+                document.getElementById('tabBtnBangTin').classList.add('active');
+                document.getElementById('contentBangTin').style.display = 'block';
+            } else {
+                document.getElementById('tabBtnGanToi').classList.add('active');
+                document.getElementById('contentGanToi').style.display = 'block';
+            }
+        }
+
+        // TÙY CHỈNH
+        function toggleRadioPill(element) {
+            const parent = element.parentElement;
+            Array.from(parent.children).forEach(el => el.classList.remove('active'));
+            element.classList.add('active');
+        }
+
+        function resetFilters() {
+            document.querySelectorAll('#sheetTuyChinh .filter-pill').forEach(el => el.classList.remove('active'));
+            document.querySelector('#filterTransport .filter-pill:nth-child(1)').classList.add('active');
+            if(document.getElementById('f_avoidFlood')) document.getElementById('f_avoidFlood').classList.add('active');
+            if(document.getElementById('f_avoidTraffic')) document.getElementById('f_avoidTraffic').classList.add('active');
+        }
+
+        function getActiveFilters() {
+            let activeFilters = [];
+            document.querySelectorAll('#sheetTuyChinh .filter-pill.active').forEach(el => { 
+                if(!el.parentElement.id.includes('filterTransport')) {
+                    activeFilters.push(el.innerText.trim()); 
+                }
+            });
+            return activeFilters;
+        }
+
+        function applyFiltersAndSwitchToAI() {
+            let filters = getActiveFilters();
+            let plainTextFilters = filters.join(', ');
+            if (plainTextFilters) {
+                document.getElementById('aiInjectedConditions').innerHTML = `<i class="fa-solid fa-filter"></i> Đã nạp bộ lọc cá nhân`;
+            }
+            switchTopMode('ai');
+        }
+
+        // BẢN ĐỒ GOOGLE MAPS
+        var map = L.map('mapScreen', { zoomControl: false }).setView([10.7626, 106.6601], 14);
+        L.tileLayer('http://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', { maxZoom: 19, subdomains:['mt0','mt1','mt2','mt3'] }).addTo(map);
+
+        var currentRoutesGroup = L.layerGroup().addTo(map); 
+        var markersLayer = L.layerGroup().addTo(map);
+        var trafficLayer = L.layerGroup().addTo(map); 
+        var userLocationLayer = L.layerGroup().addTo(map);
+        var currentTopMode = 'khamPha';
+
+        var startPoint = [10.7626, 106.6601];
+        var myLocIcon = L.divIcon({ className: '', html: '<div style="position:relative;"><div class="my-location-marker"></div><div style="color: #1565C0; font-size: 13px; font-family:\'Roboto\',sans-serif; font-weight: 700; position: absolute; top: 20px; left: 50%; transform: translateX(-50%); white-space: nowrap; text-shadow: -1.5px -1.5px 0 #fff, 1.5px -1.5px 0 #fff, -1.5px 1.5px 0 #fff, 1.5px 1.5px 0 #fff, 0 1px 2px rgba(0,0,0,0.2);">Vị trí của bạn</div></div>', iconSize: [16, 16], iconAnchor: [8, 8] });
+        L.marker(startPoint, {icon: myLocIcon}).addTo(userLocationLayer);
+
+        function goToMyLocation() { map.flyTo(startPoint, 15, { animate: true, duration: 1.5 }); }
+
+        function getDistance(coord1, coord2) {
+            let lat1 = coord1[0], lon1 = coord1[1], lat2 = coord2[0], lon2 = coord2[1];
+            let R = 6371; 
+            let dLat = (lat2-lat1) * Math.PI / 180;
+            let dLon = (lon2-lon1) * Math.PI / 180;
+            let a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
+            return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        }
+
+        // ================= MEGA DICTIONARY VỚI MENU TÍCH HỢP SẴN =================
+        const placesDB = [
+            { keys: ["kinh tế cơ sở b", "ueh cơ sở b", "cơ sở b"], name: "UEH Cơ sở B", coords: [10.7731, 106.6697], icon: "fa-graduation-cap", color: "#C62828", brand: "ueh" },
+            { keys: ["ueh cơ sở a", "cơ sở a"], name: "UEH Cơ sở A", coords: [10.7828, 106.6953], icon: "fa-graduation-cap", color: "#C62828", brand: "ueh" },
+            { keys: ["ueh cơ sở n", "cơ sở n", "nam thành phố"], name: "UEH Cơ sở N", coords: [10.7303, 106.6738], icon: "fa-graduation-cap", color: "#C62828", brand: "ueh" },
+            { keys: ["ueh cơ sở e", "cơ sở e", "bình chánh"], name: "UEH Cơ sở E", coords: [10.7698, 106.6950], icon: "fa-graduation-cap", color: "#C62828", brand: "ueh" },
+            { keys: ["ueh cơ sở c", "cơ sở c"], name: "UEH Cơ sở C", coords: [10.7735, 106.6785], icon: "fa-graduation-cap", color: "#C62828", brand: "ueh" },
+            
+            { keys: ["ngô gia sư vạn hạnh", "ngô gia quận 10"], name: "Ngô Gia Sư Vạn Hạnh", coords: [10.7750, 106.6680], icon: "fa-mug-hot", color: "#E65100", brand: "ngogia", menu: ["trà sữa", "hồng trà", "trà đào"] },
+            { keys: ["ngô gia nguyễn tri phương", "ngô gia q10"], name: "Ngô Gia Nguyễn Tri Phương", coords: [10.7680, 106.6655], icon: "fa-mug-hot", color: "#E65100", brand: "ngogia", menu: ["trà sữa", "hồng trà", "trà đào"] },
+            { keys: ["katinat bến bạch đằng", "katinat bạch đằng"], name: "Katinat Bến Bạch Đằng", coords: [10.7710, 106.7060], icon: "fa-mug-hot", color: "#E65100", brand: "katinat", menu: ["trà sữa", "matcha latte", "cà phê", "trà đào"] },
+            { keys: ["katinat nguyễn huệ"], name: "Katinat Nguyễn Huệ", coords: [10.7740, 106.7030], icon: "fa-mug-hot", color: "#E65100", brand: "katinat", menu: ["trà sữa", "matcha latte", "cà phê", "trà đào"] },
+            { keys: ["phúc long nguyễn thị minh khai", "phúc long ntmk"], name: "Phúc Long NTMK", coords: [10.7730, 106.6850], icon: "fa-mug-hot", color: "#E65100", brand: "phuclong", menu: ["trà đào", "trà sữa", "matcha latte", "cà phê"] },
+            { keys: ["phúc long lý tự trọng"], name: "Phúc Long Lý Tự Trọng", coords: [10.7710, 106.6950], icon: "fa-mug-hot", color: "#E65100", brand: "phuclong", menu: ["trà đào", "trà sữa", "matcha latte", "cà phê"] },
+            { keys: ["highlands sư vạn hạnh"], name: "Highlands Sư Vạn Hạnh", coords: [10.7755, 106.6685], icon: "fa-mug-hot", color: "#E65100", brand: "highlands", menu: ["cà phê", "trà sen", "matcha latte", "trà sữa"] },
+            { keys: ["phê la trương định", "phê la"], name: "Phê La Trương Định", coords: [10.7745, 106.6920], icon: "fa-mug-hot", color: "#E65100", brand: "phela", menu: ["trà ô long", "trà sữa", "matcha latte", "cà phê"] },
+            { keys: ["koi thé nguyễn tri phương", "koi thé"], name: "Koi Thé NTP", coords: [10.7665, 106.6660], icon: "fa-mug-hot", color: "#E65100", brand: "koi", menu: ["trà sữa", "lục trà", "matcha latte"] },
+            { keys: ["gong cha nguyễn đình chiểu", "gong cha"], name: "Gong Cha NĐC", coords: [10.7760, 106.6880], icon: "fa-mug-hot", color: "#E65100", brand: "gongcha", menu: ["trà sữa", "matcha latte", "trà đen"] },
+
+            { keys: ["bách hóa xanh phạm hùng", "bhx phạm hùng"], name: "BHX Phạm Hùng", coords: [10.7350, 106.6650], icon: "fa-basket-shopping", color: "#2E7D32", brand: "bhx" },
+            { keys: ["bách hóa xanh nguyễn văn cừ", "bhx nguyễn văn cừ"], name: "BHX Nguyễn Văn Cừ", coords: [10.7600, 106.6850], icon: "fa-basket-shopping", color: "#2E7D32", brand: "bhx" },
+
+            { keys: ["aeon bình tân", "aeon mall bình tân"], name: "Aeon Mall Bình Tân", coords: [10.7431, 106.6133], icon: "fa-building", color: "#0288D1", brand: "aeon" },
+            { keys: ["aeon tân phú", "aeon mall tân phú"], name: "Aeon Mall Tân Phú", coords: [10.8000, 106.6180], icon: "fa-building", color: "#0288D1", brand: "aeon" },
+
+            { keys: ["haidilao bitexco", "haidilao"], name: "Haidilao Bitexco", coords: [10.7715, 106.7045], icon: "fa-utensils", color: "#D84315", brand: "haidilao", menu: ["lẩu"] },
+            { keys: ["kfc nguyễn tri phương", "kfc"], name: "KFC Nguyễn Tri Phương", coords: [10.7650, 106.6670], icon: "fa-burger", color: "#D84315", brand: "kfc", menu: ["gà rán", "burger"] },
+            { keys: ["mcdonald's bến thành", "mcdonald"], name: "McDonald's Bến Thành", coords: [10.7718, 106.6985], icon: "fa-burger", color: "#D84315", brand: "mcdonalds", menu: ["gà rán", "burger", "khoai tây chiên"] },
+            { keys: ["gogi house sư vạn hạnh", "gogi"], name: "Gogi House SVH", coords: [10.7748, 106.6675], icon: "fa-utensils", color: "#D84315", brand: "gogi", menu: ["thịt nướng", "lẩu"] },
+            { keys: ["kichi kichi vạn hạnh mall", "kichi kichi"], name: "Kichi Kichi Vạn Hạnh", coords: [10.7712, 106.6685], icon: "fa-utensils", color: "#D84315", brand: "kichikichi", menu: ["lẩu băng chuyền", "lẩu"] },
+
+            { keys: ["phố đi bộ nguyễn huệ", "phố đi bộ", "nguyễn huệ"], name: "Phố đi bộ Nguyễn Huệ", coords: [10.7743, 106.7031], icon: "fa-city", color: "#6A1B9A", brand: "landmark" },
+            { keys: ["landmark 81", "landmark", "81"], name: "Landmark 81", coords: [10.7950, 106.7218], icon: "fa-building", color: "#0288D1", brand: "landmark" },
+            { keys: ["chợ bến thành", "bến thành"], name: "Chợ Bến Thành", coords: [10.7725, 106.6980], icon: "fa-shop", color: "#D84315", brand: "landmark" }
+        ];
+
+        const brandAliases = [
+            { keys: ["ueh", "kinh tế", "đại học kinh tế"], brand: "ueh" },
+            { keys: ["trà sữa ngô gia", "ngô gia"], brand: "ngogia" },
+            { keys: ["katinat"], brand: "katinat" },
+            { keys: ["phúc long"], brand: "phuclong" },
+            { keys: ["highlands", "highland"], brand: "highlands" },
+            { keys: ["phê la", "phela"], brand: "phela" },
+            { keys: ["koi thé", "koi"], brand: "koi" },
+            { keys: ["gong cha", "gongcha"], brand: "gongcha" },
+            { keys: ["bách hóa xanh", "bách hóa", "bhx"], brand: "bhx" },
+            { keys: ["aeon mall", "aeon"], brand: "aeon" },
+            { keys: ["haidilao", "hải để lao"], brand: "haidilao" },
+            { keys: ["kfc"], brand: "kfc" },
+            { keys: ["mcdonald's", "mcdonald", "mc donald"], brand: "mcdonalds" },
+            { keys: ["gogi house", "gogi"], brand: "gogi" },
+            { keys: ["kichi kichi", "kichi"], brand: "kichikichi" }
+        ];
+
+        // TỪ KHÓA MÓN ĂN ĐỂ DÒ MENU
+        const productsDB = ["matcha latte", "trà sữa", "cà phê", "hồng trà", "trà đào", "gà rán", "burger", "lẩu"];
+
+        let allKeys = [];
+        placesDB.forEach(loc => { loc.keys.forEach(k => allKeys.push({ key: k, type: 'specific', data: loc, len: k.length })); });
+        brandAliases.forEach(b => { b.keys.forEach(k => allKeys.push({ key: k, type: 'brand', brand: b.brand, len: k.length })); });
+        allKeys.sort((a,b) => b.len - a.len);
+
+        function generateDynamicRoute(waypoints) {
+            let path = [startPoint];
+            waypoints.forEach(wp => {
+                let prev = path[path.length - 1];
+                let midLat = (prev[0] + wp.coords[0])/2;
+                let midLon = (prev[1] + wp.coords[1])/2;
+                path.push([midLat + 0.005, midLon - 0.005]); 
+                path.push(wp.coords);
+            });
+            return path;
+        }
+
+        function calcRouteTime(dist, pointsCount) {
+            return Math.round(dist * 4) + (pointsCount * 6);
+        }
+
+        let currentActiveRoutesData = [];
+        let currentlySelectedRoute = null;
+
+        // ================= THUẬT TOÁN ĐỊNH TUYẾN THAM LAM TÌM THEO MENU =================
+        function parseAndRouteAI() {
+            let rawText = document.getElementById('aiPromptBox').innerText.toLowerCase();
+            document.getElementById('sheetAI').classList.add('hidden');
+            document.getElementById('defaultSearch').style.display = 'none';
+            document.getElementById('routingHeader').style.display = 'flex';
+            document.getElementById('sheetAIFilter').classList.remove('hidden', 'expanded', 'minimized'); 
+
+            let foundItems = [];
+            let tempText = rawText; 
+
+            // 1. Quét tìm địa điểm cụ thể hoặc thương hiệu
+            allKeys.forEach(item => {
+                let idx = tempText.indexOf(item.key);
+                if (idx !== -1) {
+                    let isDuplicate = foundItems.find(f => {
+                        if (f.type === 'specific' && item.type === 'specific') return f.data.name === item.data.name;
+                        if (f.type === 'brand' && item.type === 'brand') return f.brand === item.brand;
+                        return false;
+                    });
+                    if (!isDuplicate) { 
+                        let prefix = rawText.substring(Math.max(0, idx - 15), idx);
+                        let isMandatory = /(phải|bắt buộc|ưu tiên|nhất định|chắc chắn|buộc)/.test(prefix);
+                        foundItems.push({ ...item, index: idx, isMandatory: isMandatory }); 
+                    }
+                    tempText = tempText.replace(item.key, " ".repeat(item.len));
+                }
+            });
+
+            let resolvedLocations = foundItems.map(item => {
+                let locObject;
+                if (item.type === 'specific') {
+                    locObject = { locData: item.data, index: item.index, isMandatory: item.isMandatory };
+                } else if (item.type === 'brand') {
+                    let candidates = placesDB.filter(p => p.brand === item.brand);
+                    let closest = candidates[0];
+                    let minDist = getDistance(startPoint, closest.coords);
+                    for(let i=1; i<candidates.length; i++) {
+                        let d = getDistance(startPoint, candidates[i].coords);
+                        if (d < minDist) { minDist = d; closest = candidates[i]; }
+                    }
+                    locObject = { locData: { ...closest, name: closest.name + " (Gần nhất)" }, index: item.index, isMandatory: item.isMandatory };
+                }
+                return locObject;
+            });
+            resolvedLocations.sort((a, b) => a.index - b.index);
+
+            let mainDest = null;
+            let parsedWaypoints = [];
+            let wordDenIndex = Math.max(rawText.indexOf('đến '), rawText.indexOf('tới '), rawText.indexOf('đi '));
+            
+            if (resolvedLocations.length > 0) {
+                let possibleDests = resolvedLocations.filter(f => f.index > wordDenIndex);
+                if (possibleDests.length > 0) {
+                    mainDest = possibleDests[0].locData;
+                    parsedWaypoints = resolvedLocations.filter(f => f.locData.name !== mainDest.name).map(f => {
+                        return { ...f.locData, isMandatory: f.isMandatory };
+                    });
+                } else {
+                    mainDest = resolvedLocations[resolvedLocations.length - 1].locData;
+                    parsedWaypoints = resolvedLocations.slice(0, -1).map(f => {
+                        return { ...f.locData, isMandatory: f.isMandatory };
+                    });
+                }
+            } else {
+                mainDest = { name: "Điểm đến Tùy chỉnh", coords: [10.7650, 106.6650], icon: "fa-location-dot", color: "#1565C0" };
+            }
+
+            document.getElementById('dynamicDestName').innerText = mainDest.name;
+
+            // 2. QUÉT TÌM THEO MENU MÓN ĂN/THỨC UỐNG ĐỂ TỰ ĐỘNG THÊM QUÁN CHỐNG RỐI
+            let requestedProducts = [];
+            productsDB.forEach(prod => {
+                if (rawText.includes(prod)) requestedProducts.push(prod);
+            });
+
+            requestedProducts.forEach(prod => {
+                // Lọc tất cả các quán có bán món này
+                let candidates = placesDB.filter(p => p.menu && p.menu.includes(prod));
+                if (candidates.length > 0) {
+                    // Thuật toán: Tính tổng quãng đường từ Start -> Quán -> Dest.
+                    // Lấy quán nào làm quãng đường ít bị lệch nhất (tiện đường nhất).
+                    let bestCandidate = candidates[0];
+                    let minDetour = Infinity;
+                    
+                    let destCoords = mainDest.coords;
+                    candidates.forEach(c => {
+                        let detour = getDistance(startPoint, c.coords) + getDistance(c.coords, destCoords);
+                        if (detour < minDetour) {
+                            minDetour = detour;
+                            bestCandidate = c;
+                        }
+                    });
+
+                    // Thêm quán tối ưu nhất vào danh sách ghé nếu chưa có
+                    if (!parsedWaypoints.find(wp => wp.name === bestCandidate.name)) {
+                        parsedWaypoints.push({ 
+                            ...bestCandidate, 
+                            isMandatory: false, 
+                            boughtItem: prod,
+                            name: bestCandidate.name + " (Bán " + prod + ")"
+                        });
+                    }
+                }
+            });
+
+            let timeMatch = rawText.match(/dưới (\d+) phút/) || rawText.match(/(\d+)p/) || rawText.match(/(\d+) phút/);
+            let timeLimit = timeMatch ? parseInt(timeMatch[1]) : null;
+            let wantTimeLimit = timeLimit !== null;
+
+            let vehicleEl = document.querySelector('#filterTransport .filter-pill.active');
+            let vehicle = vehicleEl ? vehicleEl.innerText : "Xe máy";
+
+            let routesToRender = [];
+            
+            let fullDistance = 0;
+            let currentPoint = startPoint;
+            parsedWaypoints.forEach(wp => { fullDistance += getDistance(currentPoint, wp.coords); currentPoint = wp.coords; });
+            fullDistance += getDistance(currentPoint, mainDest.coords);
+            let fullTime = calcRouteTime(fullDistance, parsedWaypoints.length + 1); 
+
+            let directDist = getDistance(startPoint, mainDest.coords);
+            let directTime = calcRouteTime(directDist, 1);
+
+            if (wantTimeLimit && fullTime > timeLimit) {
+                if (directTime > timeLimit) {
+                    routesToRender.push({ 
+                        id: 1, name: `Tuyến nhanh nhất có thể`, time: formatTime(directTime), dist: directDist.toFixed(1) + ' km', coords: generateDynamicRoute([mainDest]), points: [], dest: mainDest, 
+                        pro: 'Đi thẳng một mạch tới đích.', con: `Phải bỏ qua TOÀN BỘ điểm ghé.`, warn: 'Khoảng cách quá xa, không thể đi kịp giờ' 
+                    });
+                } else {
+                    let optimalWaypoints = [...parsedWaypoints];
+                    let droppedNames = [];
+                    let foundValidRoute = false;
+
+                    while (optimalWaypoints.length > 0) {
+                        let worstIdx = -1;
+                        for (let i = optimalWaypoints.length - 1; i >= 0; i--) {
+                            if (!optimalWaypoints[i].isMandatory) { worstIdx = i; break; }
+                        }
+                        if (worstIdx === -1) break; 
+
+                        let dropped = optimalWaypoints.splice(worstIdx, 1)[0];
+                        droppedNames.push(dropped.name.split(' (')[0]);
+
+                        let testDist = 0; let tp = startPoint;
+                        optimalWaypoints.forEach(wp => { testDist += getDistance(tp, wp.coords); tp = wp.coords; });
+                        testDist += getDistance(tp, mainDest.coords);
+                        let testTime = calcRouteTime(testDist, optimalWaypoints.length + 1);
+
+                        if (testTime <= timeLimit) {
+                            let rPath = generateDynamicRoute([...optimalWaypoints, mainDest]);
+                            routesToRender.push({ 
+                                id: 1, name: `Tuyến ưu tiên (<${formatTime(timeLimit)})`, time: formatTime(testTime), dist: testDist.toFixed(1) + ' km', coords: rPath, points: optimalWaypoints, dest: mainDest,
+                                pro: 'Đạt mục tiêu thời gian.', con: `Phải bỏ qua ${droppedNames.join(', ')}.`, warn: `Đã tự động bỏ qua ${droppedNames.join(', ')}` 
+                            });
+                            foundValidRoute = true;
+                            break;
+                        }
+                    }
+                    
+                    if (!foundValidRoute) {
+                        let testDist = 0; let tp = startPoint;
+                        optimalWaypoints.forEach(wp => { testDist += getDistance(tp, wp.coords); tp = wp.coords; });
+                        testDist += getDistance(tp, mainDest.coords);
+                        let testTime = calcRouteTime(testDist, optimalWaypoints.length + 1);
+                        
+                        let rPath = generateDynamicRoute([...optimalWaypoints, mainDest]);
+                        routesToRender.push({ 
+                            id: 1, name: `Tuyến Giữ Điểm Bắt Buộc`, time: formatTime(testTime), dist: testDist.toFixed(1) + ' km', coords: rPath, points: optimalWaypoints, dest: mainDest,
+                            pro: 'Giữ lại các điểm bạn yêu cầu bắt buộc.', con: droppedNames.length > 0 ? `Đã bỏ ${droppedNames.join(', ')} nhưng vẫn trễ.` : 'Trễ giờ do điểm bắt buộc.', warn: `Trễ ${formatTime(testTime - timeLimit)}`
+                        });
+                    }
+                }
+
+                routesToRender.push({ 
+                    id: 2, name: 'Tuyến ghé đầy đủ', time: formatTime(fullTime), dist: fullDistance.toFixed(1) + ' km', coords: generateDynamicRoute([...parsedWaypoints, mainDest]), points: parsedWaypoints, dest: mainDest,
+                    pro: 'Ghé đủ tất cả yêu cầu.', con: 'Trễ thời gian quy định.', warn: `Sẽ bị trễ ${formatTime(fullTime - timeLimit)}` 
+                });
+            } else {
+                routesToRender.push({ 
+                    id: 1, name: 'Tuyến đường AI Tối ưu', time: formatTime(fullTime), dist: fullDistance.toFixed(1) + ' km', coords: generateDynamicRoute([...parsedWaypoints, mainDest]), points: parsedWaypoints, dest: mainDest,
+                    pro: 'Đáp ứng toàn bộ yêu cầu.', con: 'Đường đi thông thoáng.', warn: '' 
+                });
+            }
+
+            currentActiveRoutesData = routesToRender;
+
+            // Xây dựng Tags UI
+            const tagContainer = document.getElementById('dynamicTagsContainer');
+            tagContainer.innerHTML = `<div class="dynamic-tag tag-vehicle">${vehicle}</div>`; 
+            
+            parsedWaypoints.forEach(wp => { 
+                let mandatoryStr = wp.isMandatory ? '⭐ Bắt buộc: ' : 'Ghé: ';
+                let mandatoryClass = wp.isMandatory ? 'mandatory' : '';
+                if (wp.boughtItem) {
+                    tagContainer.innerHTML += `<div class="dynamic-tag tag-shop ${mandatoryClass}"><i class="fa-solid fa-mug-hot"></i> Đã chọn ${wp.name.split(' (')[0]} tiện đường nhất để mua ${wp.boughtItem}</div>`; 
+                } else {
+                    tagContainer.innerHTML += `<div class="dynamic-tag tag-shop ${mandatoryClass}"><i class="fa-solid ${wp.icon}"></i> ${mandatoryStr}${wp.name.split(' (')[0]}</div>`; 
+                }
+            });
+            if(wantTimeLimit) tagContainer.innerHTML += `<div class="dynamic-tag tag-danger"><i class="fa-solid fa-stopwatch"></i> Dưới ${formatTime(timeLimit)}</div>`;
+
+            let personalFilters = getActiveFilters();
+            personalFilters.forEach(text => {
+                let lowText = text.toLowerCase();
+                let tagClass = 'tag-vehicle'; 
+                if(lowText.includes('tránh') || lowText.includes('né')) tagClass = 'tag-avoid';
+                if(lowText.includes('nắng') || lowText.includes('cây')) tagClass = 'tag-nature';
+                if(lowText.includes('đỏ') || lowText.includes('xăng')) tagClass = 'tag-sun';
+                tagContainer.innerHTML += `<div class="dynamic-tag ${tagClass}">${text}</div>`;
+            });
+
+            const routesContainer = document.getElementById('dynamicRoutesContainer');
+            routesContainer.innerHTML = ''; 
+            routesToRender.forEach((r, index) => {
+                let alertClass = r.warn.includes('Trễ') || r.warn.includes('bỏ qua') || r.warn.includes('Không thể') ? 'alert-border' : '';
+                let warnHtml = r.warn ? `<div class="pro-con warn"><i class="fa-solid fa-triangle-exclamation"></i> <span><strong>Cảnh báo:</strong> ${r.warn}</span></div>` : '';
+                routesContainer.innerHTML += `
+                    <div class="route-card ${index === 0 ? 'active' : ''} ${alertClass}" id="cardRoute${r.id}" onclick="selectDynamicRoute(${r.id})">
+                        <div style="width: 75px; text-align: center;"><div class="route-time ${r.warn.includes('Trễ') || r.warn.includes('không thể') ? 'warn' : ''}">${r.time}</div><div style="font-size: 11px; color: gray;">${r.dist}</div></div>
+                        <div style="flex: 1;"><strong style="font-size: 14px; color: var(--text-blue);">${r.name}</strong>
+                        <div class="pro-con pro"><i class="fa-solid fa-check"></i> <span>${r.pro}</span></div>
+                        <div class="pro-con con"><i class="fa-solid fa-xmark"></i> <span>${r.con}</span></div>
+                        ${warnHtml}
+                        </div>
+                    </div>`;
+            });
+
+            document.getElementById('startNavBtn').style.display = 'block';
+            selectDynamicRoute(routesToRender[0].id); 
+            map.fitBounds(L.polyline(routesToRender[0].coords).getBounds(), {padding: [50, 50]});
+        }
+
+        window.restoreRouteList = function(routeId) {
+            document.querySelectorAll('.bottom-sheet').forEach(sheet => {
+                sheet.classList.add('hidden');
+                sheet.classList.remove('expanded', 'minimized');
+            });
+            let sheetAIFilter = document.getElementById('sheetAIFilter');
+            sheetAIFilter.classList.remove('hidden');
+            if(routeId) { selectDynamicRoute(routeId); }
+        };
+
+        function selectDynamicRoute(selectedId) {
+            currentRoutesGroup.clearLayers();
+            markersLayer.clearLayers(); 
+
+            let hasWarning = false; let warningText = "";
+            let selectedRoute = currentActiveRoutesData.find(r => r.id === selectedId);
+            currentlySelectedRoute = selectedRoute;
+
+            currentActiveRoutesData.forEach(r => {
+                if (r.id !== selectedId) {
+                    let line1 = L.polyline(r.coords, { color: '#616161', weight: 8, opacity: 0.8 }).addTo(currentRoutesGroup);
+                    let line2 = L.polyline(r.coords, { color: '#9E9E9E', weight: 4, opacity: 1 }).addTo(currentRoutesGroup);
+                    
+                    let onLineClick = function(e) { L.DomEvent.stopPropagation(e); window.restoreRouteList(r.id); };
+                    line1.on('click', onLineClick); line2.on('click', onLineClick);
+
+                    L.marker(r.coords[Math.floor(r.coords.length/2)], {icon: L.divIcon({html: `<div class="time-badge alt" onclick="event.stopPropagation(); window.restoreRouteList(${r.id})">${r.time}</div>`}) }).addTo(currentRoutesGroup);
+                    if(document.getElementById('cardRoute'+r.id)) document.getElementById('cardRoute'+r.id).classList.remove('active');
+                }
+            });
+
+            if (selectedRoute) {
+                let routeColor = selectedRoute.warn.includes('Trễ') || selectedRoute.warn.includes('Không thể') ? '#C62828' : '#0D47A1'; 
+                let routeCore = selectedRoute.warn.includes('Trễ') || selectedRoute.warn.includes('Không thể') ? '#EF5350' : '#42A5F5';
+                
+                let line1 = L.polyline(selectedRoute.coords, { color: routeColor, weight: 10, opacity: 0.8 }).addTo(currentRoutesGroup);
+                let line2 = L.polyline(selectedRoute.coords, { color: routeCore, weight: 5, opacity: 1 }).addTo(currentRoutesGroup);
+                
+                let onLineClick = function(e) { L.DomEvent.stopPropagation(e); window.restoreRouteList(selectedRoute.id); };
+                line1.on('click', onLineClick); line2.on('click', onLineClick);
+                
+                let badgeClass = selectedRoute.warn.includes('Trễ') || selectedRoute.warn.includes('Không thể') ? 'time-badge danger' : 'time-badge';
+                L.marker(selectedRoute.coords[Math.floor(selectedRoute.coords.length/2)], {icon: L.divIcon({html: `<div class="${badgeClass}" onclick="event.stopPropagation(); window.restoreRouteList(${selectedRoute.id})">${selectedRoute.time}</div>`}) }).addTo(currentRoutesGroup);
+                if(document.getElementById('cardRoute'+selectedRoute.id)) document.getElementById('cardRoute'+selectedRoute.id).classList.add('active');
+                
+                if (selectedRoute.warn) { hasWarning = true; warningText = selectedRoute.warn; }
+
+                // UI CHUẨN GOOGLE MAPS: Không nền, Viền trắng, Dàn ngang
+                selectedRoute.points.forEach(wp => {
+                    let shortName = wp.name.split(' (')[0];
+                    let iconCol = wp.isMandatory ? '#C62828' : wp.color;
+                    let textCol = wp.isMandatory ? '#C62828' : '#3c4043';
+                    
+                    let mkHtml = `<div onclick="event.stopPropagation(); window.showPlaceDetails('${wp.brand}', '${shortName}')" style="display:flex; align-items:center; gap:5px; width:max-content; cursor: pointer; pointer-events: auto;">
+                        <div style="background:${iconCol}; color:white; width:20px; height:20px; border-radius:50%; display:flex; justify-content:center; align-items:center; font-size:11px; box-shadow: 0 1px 3px rgba(0,0,0,0.3); flex-shrink:0;">
+                            <i class="fa-solid ${wp.icon}"></i>
+                        </div>
+                        <div style="color:${textCol}; font-family:'Roboto',sans-serif; font-size:13px; font-weight:700; text-shadow: -1.5px -1.5px 0 #fff, 1.5px -1.5px 0 #fff, -1.5px 1.5px 0 #fff, 1.5px 1.5px 0 #fff, 0 1px 3px rgba(255,255,255,0.6);">${shortName}</div>
+                    </div>`;
+                    L.marker(wp.coords, {icon: L.divIcon({ className: '', html: mkHtml, iconAnchor: [10, 10] }) }).addTo(markersLayer);
+                });
+                
+                let destShortName = selectedRoute.dest.name.split(' (')[0];
+                let dHtml = `<div onclick="event.stopPropagation(); window.showPlaceDetails('${selectedRoute.dest.brand}', '${destShortName}')" style="display:flex; align-items:center; gap:5px; width:max-content; cursor: pointer; pointer-events: auto; z-index: 1000;">
+                    <div style="background:${selectedRoute.dest.color}; color:white; width:24px; height:24px; border-radius:50%; display:flex; justify-content:center; align-items:center; font-size:13px; box-shadow: 0 2px 4px rgba(0,0,0,0.3); flex-shrink:0;">
+                        <i class="fa-solid ${selectedRoute.dest.icon}"></i>
+                    </div>
+                    <div style="color:${selectedRoute.dest.color}; font-family:'Roboto',sans-serif; font-size:15px; font-weight:900; text-shadow: -1.5px -1.5px 0 #fff, 1.5px -1.5px 0 #fff, -1.5px 1.5px 0 #fff, 1.5px 1.5px 0 #fff, 0 1px 3px rgba(255,255,255,0.6);">Đích: ${destShortName}</div>
+                </div>`;
+                L.marker(selectedRoute.dest.coords, {icon: L.divIcon({ className: '', html: dHtml, iconAnchor: [12, 12] }) }).addTo(markersLayer);
+            }
+
+            var warnBox = document.getElementById('warningPopup');
+            if(hasWarning) { warnBox.style.display = 'flex'; document.getElementById('warningText').innerText = warningText; } 
+            else { warnBox.style.display = 'none'; }
+        }
+
+        // ================= TÍNH NĂNG BẮT ĐẦU DẪN ĐƯỜNG (DRIVE MODE) =================
+        function startNavigation() {
+            if (!currentlySelectedRoute) return;
+            document.querySelectorAll('.bottom-sheet').forEach(sheet => { sheet.classList.add('hidden'); });
+            document.getElementById('topBar').classList.add('hidden');
+            let bNav = document.getElementById('bottomNav');
+            if (bNav) bNav.classList.add('hidden');
+            document.getElementById('floatingTools').classList.add('hidden');
+            
+            document.getElementById('navTopBanner').style.display = 'flex';
+            document.getElementById('navBottomBanner').style.display = 'flex';
+
+            document.getElementById('navETA').innerText = currentlySelectedRoute.time;
+            
+            let timeStr = currentlySelectedRoute.time;
+            let mins = 30;
+            if (timeStr.includes('h')) {
+                let parts = timeStr.split('h');
+                let h = parseInt(parts[0]) || 0;
+                let m = parseInt(parts[1].replace('p','')) || 0;
+                mins = h * 60 + m;
+            } else {
+                mins = parseInt(timeStr.replace('p','')) || 30;
+            }
+            
+            document.getElementById('navDist').innerText = currentlySelectedRoute.dist + ' • Tới lúc ' + getArrivalTime(mins);
+
+            map.flyTo(startPoint, 17, { animate: true, duration: 1.5 });
+        }
+
+        function endNavigation() {
+            document.getElementById('navTopBanner').style.display = 'none';
+            document.getElementById('navBottomBanner').style.display = 'none';
+
+            document.getElementById('topBar').classList.remove('hidden');
+            let bNav = document.getElementById('bottomNav');
+            if (bNav) bNav.classList.remove('hidden');
+            document.getElementById('floatingTools').classList.remove('hidden');
+            document.getElementById('sheetAIFilter').classList.remove('hidden');
+
+            if(currentlySelectedRoute) {
+                map.fitBounds(L.polyline(currentlySelectedRoute.coords).getBounds(), {padding: [50, 50]});
+            }
+        }
+
+        function getArrivalTime(minutesToAdd) {
+            let d = new Date(); d.setMinutes(d.getMinutes() + minutesToAdd);
+            return d.getHours().toString().padStart(2, '0') + ':' + d.getMinutes().toString().padStart(2, '0');
+        }
+
+        window.showPlaceDetails = function(brand, fullName) {
+            document.querySelectorAll('.bottom-sheet').forEach(sheet => { sheet.classList.add('hidden'); sheet.classList.remove('expanded', 'minimized'); });
+            let sheet = document.getElementById('sheetPlaceDetails');
+            sheet.classList.remove('hidden');
+            setTimeout(() => { sheet.classList.add('expanded'); }, 50);
+
+            let content = '';
+            if (brand === 'ngogia' || brand === 'katinat' || brand === 'phuclong' || brand === 'tch' || brand === 'highlands' || brand === 'phela' || brand === 'koi' || brand === 'gongcha') {
+                content = `
+                    <h3 style="font-size: 18px; color: #E65100; margin-bottom: 5px;"><i class="fa-solid fa-mug-hot"></i> ${fullName}</h3>
+                    <p style="font-size: 13px; color: gray; margin-bottom: 15px;">⭐ 4.8 (1,245 đánh giá) • Đang mở cửa</p>
+                    <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                        <button style="flex:1; background: var(--primary-blue); color: var(--text-blue); border: none; padding: 10px; border-radius: 10px; font-weight: bold;"><i class="fa-solid fa-route"></i> Đi tới đây</button>
+                        <button style="flex:1; background: #F5F5F5; color: #424242; border: none; padding: 10px; border-radius: 10px; font-weight: bold;"><i class="fa-solid fa-share"></i> Chia sẻ</button>
+                    </div>
+                    <h4 style="font-size: 14px; margin-bottom: 10px;">Thực đơn nổi bật</h4>
+                    <div class="menu-scroll">
+                        <div class="menu-item"><img src="https://images.unsplash.com/photo-1558855567-1a440618ff0c?w=100&h=100&fit=crop" style="width: 100%; border-radius: 8px; margin-bottom: 5px;"><strong style="font-size: 12px; display: block;">Hồng trà trân châu</strong><span style="font-size: 12px; color: #E65100;">25.000đ</span></div>
+                        <div class="menu-item"><img src="https://images.unsplash.com/photo-1595981267035-7b04d84b51ad?w=100&h=100&fit=crop" style="width: 100%; border-radius: 8px; margin-bottom: 5px;"><strong style="font-size: 12px; display: block;">Trà sữa nướng</strong><span style="font-size: 12px; color: #E65100;">30.000đ</span></div>
+                    </div>
+                    <h4 style="font-size: 14px; margin-top: 10px; margin-bottom: 10px;">Đánh giá gần đây</h4>
+                    <div style="background: #F8F9FA; padding: 10px; border-radius: 10px; font-size: 12px; margin-bottom: 10px;"><strong>Anh Tú</strong> ⭐⭐⭐⭐⭐<br>Trà sữa đậm vị, trân châu dai ngon.</div>
+                `;
+            } else if (brand === 'haidilao' || brand === 'kfc' || brand === 'mcdonalds' || brand === 'gogi' || brand === 'kichikichi') {
+                content = `
+                    <h3 style="font-size: 18px; color: #D84315; margin-bottom: 5px;"><i class="fa-solid fa-utensils"></i> ${fullName}</h3>
+                    <p style="font-size: 13px; color: gray; margin-bottom: 15px;">⭐ 4.6 (2,105 đánh giá) • Đang mở cửa</p>
+                    <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                        <button style="flex:1; background: var(--primary-blue); color: var(--text-blue); border: none; padding: 10px; border-radius: 10px; font-weight: bold;"><i class="fa-solid fa-route"></i> Đi tới đây</button>
+                        <button style="flex:1; background: #F5F5F5; color: #424242; border: none; padding: 10px; border-radius: 10px; font-weight: bold;"><i class="fa-solid fa-share"></i> Chia sẻ</button>
+                    </div>
+                    <h4 style="font-size: 14px; margin-top: 10px; margin-bottom: 10px;">Đánh giá gần đây</h4>
+                    <div style="background: #F8F9FA; padding: 10px; border-radius: 10px; font-size: 12px; margin-bottom: 10px;"><strong>Đức Trí</strong> ⭐⭐⭐⭐⭐<br>Đồ ăn ngon, phục vụ rất nhiệt tình chu đáo.</div>
+                `;
+            } else if (brand === 'bhx' || brand === 'coop' || brand === 'emart') {
+                content = `
+                    <h3 style="font-size: 18px; color: #2E7D32; margin-bottom: 5px;"><i class="fa-solid fa-basket-shopping"></i> ${fullName}</h3>
+                    <p style="font-size: 13px; color: gray; margin-bottom: 15px;">⭐ 4.5 (890 đánh giá) • Siêu thị / Cửa hàng</p>
+                    <div style="display: flex; gap: 10px; margin-bottom: 15px;"><button style="flex:1; background: var(--primary-blue); color: var(--text-blue); border: none; padding: 10px; border-radius: 10px; font-weight: bold;"><i class="fa-solid fa-route"></i> Đi tới đây</button></div>
+                    <h4 style="font-size: 14px; margin-bottom: 10px;">Khuyến mãi hôm nay</h4>
+                    <div style="background: #E8F5E9; padding: 10px; border-radius: 10px; font-size: 13px; color: #2E7D32; margin-bottom: 10px;"><i class="fa-solid fa-tag"></i> Giảm giá 20% mặt hàng tươi sống sau 18h.</div>
+                    <h4 style="font-size: 14px; margin-top: 10px; margin-bottom: 10px;">Đánh giá</h4>
+                    <div style="background: #F8F9FA; padding: 10px; border-radius: 10px; font-size: 12px;"><strong>Lan Ngọc</strong> ⭐⭐⭐⭐⭐<br>Nhân viên nhiệt tình dắt xe.</div>
+                `;
+            } else {
+                content = `
+                    <h3 style="font-size: 18px; color: #1565C0; margin-bottom: 5px;"><i class="fa-solid fa-location-dot"></i> ${fullName}</h3>
+                    <p style="font-size: 13px; color: gray; margin-bottom: 15px;">⭐ 4.7 (3,000+ đánh giá)</p>
+                    <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                        <button style="flex:1; background: var(--primary-blue); color: var(--text-blue); border: none; padding: 10px; border-radius: 10px; font-weight: bold;"><i class="fa-solid fa-route"></i> Đi tới đây</button>
+                        <button style="flex:1; background: #F5F5F5; color: #424242; border: none; padding: 10px; border-radius: 10px; font-weight: bold;"><i class="fa-solid fa-share"></i> Chia sẻ</button>
+                    </div>
+                    <img src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=400&h=150&fit=crop" style="width: 100%; border-radius: 10px; margin-bottom: 15px;">
+                    <div style="background: #F8F9FA; padding: 10px; border-radius: 10px; font-size: 12px;"><strong>Người dùng Google</strong> ⭐⭐⭐⭐⭐<br>Địa điểm tuyệt vời, rộng rãi và sạch sẽ.</div>
+                `;
+            }
+            document.getElementById('placeDetailsContent').innerHTML = content;
+        }
+
+        // --- CÁC HÀM UI CƠ BẢN ---
+        function toggleExpand(element) {
+            const sheet = element.parentElement;
+            if (!sheet.classList.contains('expanded') && !sheet.classList.contains('minimized')) { sheet.classList.add('minimized'); } 
+            else if (sheet.classList.contains('minimized')) { sheet.classList.remove('minimized'); sheet.classList.add('expanded'); } 
+            else if (sheet.classList.contains('expanded')) { sheet.classList.remove('expanded'); }
+        }
+
+        map.on('click', function() {
+            document.querySelectorAll('.bottom-sheet').forEach(sheet => { if (!sheet.classList.contains('hidden')) { sheet.classList.remove('expanded'); sheet.classList.add('minimized'); } });
+        });
+
+        function showTrafficOverlay() {
+            trafficLayer.clearLayers();
+            L.polyline([[10.7626, 106.6615], [10.7626, 106.6655]], {color: '#1565C0', weight: 8, opacity: 0.8}).addTo(trafficLayer);
+            L.marker([10.7626, 106.6635], {icon: L.divIcon({html: '<div style="background:#1565C0;color:white;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 0 5px rgba(0,0,0,0.5);"><i class="fa-solid fa-water" style="font-size:10px;"></i></div>'})}).addTo(trafficLayer);
+            L.polyline([[10.7680, 106.6665], [10.7680, 106.6697]], {color: '#C62828', weight: 8, opacity: 0.8}).addTo(trafficLayer);
+            L.marker([10.7680, 106.6680], {icon: L.divIcon({html: '<div style="background:#C62828;color:white;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 0 5px rgba(0,0,0,0.5);"><i class="fa-solid fa-car-burst" style="font-size:10px;"></i></div>'})}).addTo(trafficLayer);
+        }
+
+        function switchNav(tab) {
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            document.getElementById('nav' + tab.charAt(0).toUpperCase() + tab.slice(1)).classList.add('active');
+            
+            document.querySelectorAll('.bottom-sheet').forEach(el => { el.classList.add('hidden'); el.classList.remove('expanded', 'minimized'); });
+            document.getElementById('communityScreen').style.display = 'none';
+            if(document.getElementById('settingsScreen')) document.getElementById('settingsScreen').style.display = 'none';
+
+            if (tab === 'community') { document.getElementById('communityScreen').style.display = 'block'; return; }
+            if (tab === 'settings') { document.getElementById('settingsScreen').style.display = 'block'; return; }
+            
+            if (tab === 'home') {
+                if (currentTopMode === 'ai') { document.getElementById(document.getElementById('routingHeader').style.display === 'flex' ? 'sheetAIFilter' : 'sheetAI').classList.remove('hidden'); }
+                else if (currentTopMode === 'tuyChinh') { let sheet = document.getElementById('sheetTuyChinh'); sheet.classList.remove('hidden'); sheet.classList.add('expanded'); }
+                else { document.getElementById('sheetHome').classList.remove('hidden'); trafficLayer.clearLayers(); }
+            } else if (tab === 'traffic') {
+                document.getElementById('sheetTraffic').classList.remove('hidden'); document.getElementById('sheetTraffic').classList.add('expanded');
+                showTrafficOverlay();
+            }
+        }
+
+        function switchTopMode(mode) {
+            currentTopMode = mode;
+            document.querySelectorAll('.chip').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.bottom-sheet').forEach(el => { el.classList.add('hidden'); el.classList.remove('expanded', 'minimized'); });
+            document.getElementById('defaultSearch').style.display = 'flex';
+            document.getElementById('routingHeader').style.display = 'none';
+            document.getElementById('warningPopup').style.display = 'none';
+            currentRoutesGroup.clearLayers(); markersLayer.clearLayers(); trafficLayer.clearLayers();
+            
+            if (mode === 'khamPha') { map.flyTo([10.7626, 106.6601], 14); document.getElementById('chipKhamPha').classList.add('active'); document.getElementById('sheetHome').classList.remove('hidden'); } 
+            else if (mode === 'ai') { document.getElementById('chipAI').classList.add('active'); document.getElementById('sheetAI').classList.remove('hidden'); document.getElementById('sheetAI').classList.add('expanded'); } 
+            else if (mode === 'tuyChinh') { document.getElementById('chipTuyChinh').classList.add('active'); let tSheet = document.getElementById('sheetTuyChinh'); tSheet.classList.remove('hidden'); tSheet.classList.add('expanded'); }
+        }
+    </script>
+</body>
+</html>
