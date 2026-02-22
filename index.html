@@ -313,7 +313,7 @@
             <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 15px; overflow-x: auto; padding-bottom: 5px;" id="dynamicTagsContainer"></div>
             
             <h3 style="font-size: 15px; margin-bottom: 10px; color: #424242;">Lộ trình Đề xuất</h3>
-            <p style="font-size: 11px; color: #1565C0; margin-top: -5px; margin-bottom: 10px;">💡 Bấm vào Lộ trình (đường kẻ) để xem lại danh sách này.</p>
+            <p style="font-size: 11px; color: #1565C0; margin-top: -5px; margin-bottom: 10px;">💡 Bấm vào Lộ trình (đường kẻ) trên bản đồ để xem lại danh sách này.</p>
             <div id="dynamicRoutesContainer"></div>
 
             <div class="start-nav-btn" id="startNavBtn" onclick="startNavigation()"><i class="fa-solid fa-location-arrow"></i> Bắt đầu Dẫn đường</div>
@@ -507,7 +507,6 @@
             }
         }
 
-        // TÙY CHỈNH
         function toggleRadioPill(element) {
             const parent = element.parentElement;
             Array.from(parent.children).forEach(el => el.classList.remove('active'));
@@ -573,29 +572,46 @@
             { keys: ["ueh cơ sở e", "cơ sở e", "bình chánh"], name: "UEH Cơ sở E", coords: [10.7698, 106.6950], icon: "fa-graduation-cap", color: "#C62828", brand: "ueh" },
             { keys: ["ueh cơ sở c", "cơ sở c"], name: "UEH Cơ sở C", coords: [10.7735, 106.6785], icon: "fa-graduation-cap", color: "#C62828", brand: "ueh" },
             
-            { keys: ["ngô gia sư vạn hạnh", "ngô gia quận 10"], name: "Ngô Gia Sư Vạn Hạnh", coords: [10.7750, 106.6680], icon: "fa-mug-hot", color: "#E65100", brand: "ngogia", menu: ["trà sữa", "hồng trà", "trà đào"] },
+            // Trà sữa / Cafe
+            { keys: ["ngô gia sư vạn hạnh", "ngô gia quận 10", "ngo gia"], name: "Ngô Gia Sư Vạn Hạnh", coords: [10.7750, 106.6680], icon: "fa-mug-hot", color: "#E65100", brand: "ngogia", menu: ["trà sữa", "hồng trà", "trà đào"] },
             { keys: ["ngô gia nguyễn tri phương", "ngô gia q10"], name: "Ngô Gia Nguyễn Tri Phương", coords: [10.7680, 106.6655], icon: "fa-mug-hot", color: "#E65100", brand: "ngogia", menu: ["trà sữa", "hồng trà", "trà đào"] },
             { keys: ["katinat bến bạch đằng", "katinat bạch đằng"], name: "Katinat Bến Bạch Đằng", coords: [10.7710, 106.7060], icon: "fa-mug-hot", color: "#E65100", brand: "katinat", menu: ["trà sữa", "matcha latte", "cà phê", "trà đào"] },
             { keys: ["katinat nguyễn huệ"], name: "Katinat Nguyễn Huệ", coords: [10.7740, 106.7030], icon: "fa-mug-hot", color: "#E65100", brand: "katinat", menu: ["trà sữa", "matcha latte", "cà phê", "trà đào"] },
-            { keys: ["phúc long nguyễn thị minh khai", "phúc long ntmk"], name: "Phúc Long NTMK", coords: [10.7730, 106.6850], icon: "fa-mug-hot", color: "#E65100", brand: "phuclong", menu: ["trà đào", "trà sữa", "matcha latte", "cà phê"] },
+            { keys: ["phúc long nguyễn thị minh khai", "phúc long ntmk", "phuc long"], name: "Phúc Long NTMK", coords: [10.7730, 106.6850], icon: "fa-mug-hot", color: "#E65100", brand: "phuclong", menu: ["trà đào", "trà sữa", "matcha latte", "cà phê"] },
             { keys: ["phúc long lý tự trọng"], name: "Phúc Long Lý Tự Trọng", coords: [10.7710, 106.6950], icon: "fa-mug-hot", color: "#E65100", brand: "phuclong", menu: ["trà đào", "trà sữa", "matcha latte", "cà phê"] },
-            { keys: ["highlands sư vạn hạnh"], name: "Highlands Sư Vạn Hạnh", coords: [10.7755, 106.6685], icon: "fa-mug-hot", color: "#E65100", brand: "highlands", menu: ["cà phê", "trà sen", "matcha latte", "trà sữa"] },
-            { keys: ["phê la trương định", "phê la"], name: "Phê La Trương Định", coords: [10.7745, 106.6920], icon: "fa-mug-hot", color: "#E65100", brand: "phela", menu: ["trà ô long", "trà sữa", "matcha latte", "cà phê"] },
-            { keys: ["koi thé nguyễn tri phương", "koi thé"], name: "Koi Thé NTP", coords: [10.7665, 106.6660], icon: "fa-mug-hot", color: "#E65100", brand: "koi", menu: ["trà sữa", "lục trà", "matcha latte"] },
-            { keys: ["gong cha nguyễn đình chiểu", "gong cha"], name: "Gong Cha NĐC", coords: [10.7760, 106.6880], icon: "fa-mug-hot", color: "#E65100", brand: "gongcha", menu: ["trà sữa", "matcha latte", "trà đen"] },
+            { keys: ["highlands sư vạn hạnh", "highland"], name: "Highlands Sư Vạn Hạnh", coords: [10.7755, 106.6685], icon: "fa-mug-hot", color: "#E65100", brand: "highlands", menu: ["cà phê", "trà sen", "matcha latte", "trà sữa"] },
+            { keys: ["phê la trương định", "phê la", "phela"], name: "Phê La Trương Định", coords: [10.7745, 106.6920], icon: "fa-mug-hot", color: "#E65100", brand: "phela", menu: ["trà ô long", "trà sữa", "matcha latte", "cà phê"] },
+            { keys: ["koi thé nguyễn tri phương", "koi thé", "koi the"], name: "Koi Thé NTP", coords: [10.7665, 106.6660], icon: "fa-mug-hot", color: "#E65100", brand: "koi", menu: ["trà sữa", "lục trà", "matcha latte"] },
+            { keys: ["gong cha nguyễn đình chiểu", "gong cha", "gongcha"], name: "Gong Cha NĐC", coords: [10.7760, 106.6880], icon: "fa-mug-hot", color: "#E65100", brand: "gongcha", menu: ["trà sữa", "matcha latte", "trà đen"] },
+            { keys: ["the coffee house 3/2", "tch 3/2"], name: "The Coffee House 3/2", coords: [10.7655, 106.6625], icon: "fa-mug-hot", color: "#E65100", brand: "tch", menu: ["cà phê", "trà đào", "trà sữa"] },
+            { keys: ["the coffee house sư vạn hạnh", "tch sư vạn hạnh"], name: "The Coffee House SVH", coords: [10.7740, 106.6675], icon: "fa-mug-hot", color: "#E65100", brand: "tch", menu: ["cà phê", "trà đào", "trà sữa"] },
+            { keys: ["mixue nguyễn tri phương", "mixue"], name: "Mixue NTP", coords: [10.7660, 106.6660], icon: "fa-ice-cream", color: "#E65100", brand: "mixue", menu: ["trà sữa", "kem", "hồng trà"] },
 
+            // Siêu thị / TTTM
             { keys: ["bách hóa xanh phạm hùng", "bhx phạm hùng"], name: "BHX Phạm Hùng", coords: [10.7350, 106.6650], icon: "fa-basket-shopping", color: "#2E7D32", brand: "bhx" },
             { keys: ["bách hóa xanh nguyễn văn cừ", "bhx nguyễn văn cừ"], name: "BHX Nguyễn Văn Cừ", coords: [10.7600, 106.6850], icon: "fa-basket-shopping", color: "#2E7D32", brand: "bhx" },
-
+            { keys: ["bách hóa xanh 3/2", "bhx 3/2", "ba tháng hai"], name: "BHX Đường 3/2", coords: [10.7650, 106.6600], icon: "fa-basket-shopping", color: "#2E7D32", brand: "bhx" },
             { keys: ["aeon bình tân", "aeon mall bình tân"], name: "Aeon Mall Bình Tân", coords: [10.7431, 106.6133], icon: "fa-building", color: "#0288D1", brand: "aeon" },
             { keys: ["aeon tân phú", "aeon mall tân phú"], name: "Aeon Mall Tân Phú", coords: [10.8000, 106.6180], icon: "fa-building", color: "#0288D1", brand: "aeon" },
+            { keys: ["vincom đồng khởi", "vincom quận 1"], name: "Vincom Đồng Khởi", coords: [10.7780, 106.7020], icon: "fa-building", color: "#0288D1", brand: "vincom", menu: ["lẩu", "gà rán", "cà phê"] },
+            { keys: ["vincom thảo điền", "vincom mega mall"], name: "Vincom Thảo Điền", coords: [10.8020, 106.7400], icon: "fa-building", color: "#0288D1", brand: "vincom", menu: ["lẩu", "gà rán", "pizza"] },
+            { keys: ["co.opmart", "coopmart", "coop"], name: "Coopmart", coords: [10.7645, 106.6580], icon: "fa-cart-shopping", color: "#2E7D32", brand: "coop" },
+            { keys: ["emart gò vấp", "emart"], name: "Emart Gò Vấp", coords: [10.8235, 106.6850], icon: "fa-cart-shopping", color: "#FBC02D", brand: "emart", menu: ["gà rán", "pizza"] },
+            { keys: ["lottemart", "lotte mart", "lotte"], name: "Lotte Mart", coords: [10.7685, 106.6550], icon: "fa-cart-shopping", color: "#2E7D32", brand: "lotte" },
+            { keys: ["circle k", "circlek"], name: "Circle K", coords: [10.7630, 106.6630], icon: "fa-store", color: "#D32F2F", brand: "circlek", menu: ["cà phê", "trà sữa"] },
+            { keys: ["gs25"], name: "GS25", coords: [10.7650, 106.6650], icon: "fa-store", color: "#1976D2", brand: "gs25", menu: ["cà phê"] },
 
+            // Nhà hàng / Fastfood
             { keys: ["haidilao bitexco", "haidilao"], name: "Haidilao Bitexco", coords: [10.7715, 106.7045], icon: "fa-utensils", color: "#D84315", brand: "haidilao", menu: ["lẩu"] },
             { keys: ["kfc nguyễn tri phương", "kfc"], name: "KFC Nguyễn Tri Phương", coords: [10.7650, 106.6670], icon: "fa-burger", color: "#D84315", brand: "kfc", menu: ["gà rán", "burger"] },
-            { keys: ["mcdonald's bến thành", "mcdonald"], name: "McDonald's Bến Thành", coords: [10.7718, 106.6985], icon: "fa-burger", color: "#D84315", brand: "mcdonalds", menu: ["gà rán", "burger", "khoai tây chiên"] },
-            { keys: ["gogi house sư vạn hạnh", "gogi"], name: "Gogi House SVH", coords: [10.7748, 106.6675], icon: "fa-utensils", color: "#D84315", brand: "gogi", menu: ["thịt nướng", "lẩu"] },
-            { keys: ["kichi kichi vạn hạnh mall", "kichi kichi"], name: "Kichi Kichi Vạn Hạnh", coords: [10.7712, 106.6685], icon: "fa-utensils", color: "#D84315", brand: "kichikichi", menu: ["lẩu băng chuyền", "lẩu"] },
+            { keys: ["mcdonald's bến thành", "mcdonald", "mc donald"], name: "McDonald's Bến Thành", coords: [10.7718, 106.6985], icon: "fa-burger", color: "#D84315", brand: "mcdonalds", menu: ["gà rán", "burger", "khoai tây chiên"] },
+            { keys: ["gogi house sư vạn hạnh", "gogi house", "gogi"], name: "Gogi House SVH", coords: [10.7748, 106.6675], icon: "fa-utensils", color: "#D84315", brand: "gogi", menu: ["thịt nướng", "lẩu"] },
+            { keys: ["kichi kichi vạn hạnh mall", "kichi kichi", "kichi"], name: "Kichi Kichi Vạn Hạnh", coords: [10.7712, 106.6685], icon: "fa-utensils", color: "#D84315", brand: "kichikichi", menu: ["lẩu băng chuyền", "lẩu"] },
+            { keys: ["pizza hut", "pizzahut"], name: "Pizza Hut", coords: [10.7680, 106.6620], icon: "fa-pizza-slice", color: "#D84315", brand: "pizzahut", menu: ["pizza"] },
+            { keys: ["domino's", "domino", "dominos"], name: "Domino's Pizza", coords: [10.7690, 106.6630], icon: "fa-pizza-slice", color: "#D84315", brand: "dominos", menu: ["pizza"] },
+            { keys: ["texas chicken", "texas"], name: "Texas Chicken", coords: [10.7670, 106.6660], icon: "fa-burger", color: "#D84315", brand: "texas", menu: ["gà rán", "burger"] },
 
+            // Điểm khác
             { keys: ["phố đi bộ nguyễn huệ", "phố đi bộ", "nguyễn huệ"], name: "Phố đi bộ Nguyễn Huệ", coords: [10.7743, 106.7031], icon: "fa-city", color: "#6A1B9A", brand: "landmark" },
             { keys: ["landmark 81", "landmark", "81"], name: "Landmark 81", coords: [10.7950, 106.7218], icon: "fa-building", color: "#0288D1", brand: "landmark" },
             { keys: ["chợ bến thành", "bến thành"], name: "Chợ Bến Thành", coords: [10.7725, 106.6980], icon: "fa-shop", color: "#D84315", brand: "landmark" }
@@ -603,24 +619,35 @@
 
         const brandAliases = [
             { keys: ["ueh", "kinh tế", "đại học kinh tế"], brand: "ueh" },
-            { keys: ["trà sữa ngô gia", "ngô gia"], brand: "ngogia" },
+            { keys: ["trà sữa ngô gia", "ngô gia", "ngo gia"], brand: "ngogia" },
             { keys: ["katinat"], brand: "katinat" },
-            { keys: ["phúc long"], brand: "phuclong" },
+            { keys: ["phúc long", "phuc long"], brand: "phuclong" },
             { keys: ["highlands", "highland"], brand: "highlands" },
             { keys: ["phê la", "phela"], brand: "phela" },
-            { keys: ["koi thé", "koi"], brand: "koi" },
+            { keys: ["koi thé", "koi the", "koi"], brand: "koi" },
             { keys: ["gong cha", "gongcha"], brand: "gongcha" },
-            { keys: ["bách hóa xanh", "bách hóa", "bhx"], brand: "bhx" },
+            { keys: ["the coffee house", "tch"], brand: "tch" },
+            { keys: ["mixue"], brand: "mixue" },
+            { keys: ["bách hóa xanh", "bach hoa xanh", "bách hóa", "bhx"], brand: "bhx" },
+            { keys: ["co.opmart", "coopmart", "coop"], brand: "coop" },
+            { keys: ["emart"], brand: "emart" },
+            { keys: ["lotte mart", "lotte"], brand: "lotte" },
+            { keys: ["circle k", "circlek"], brand: "circlek" },
+            { keys: ["gs25"], brand: "gs25" },
             { keys: ["aeon mall", "aeon"], brand: "aeon" },
+            { keys: ["vincom"], brand: "vincom" },
             { keys: ["haidilao", "hải để lao"], brand: "haidilao" },
             { keys: ["kfc"], brand: "kfc" },
             { keys: ["mcdonald's", "mcdonald", "mc donald"], brand: "mcdonalds" },
             { keys: ["gogi house", "gogi"], brand: "gogi" },
-            { keys: ["kichi kichi", "kichi"], brand: "kichikichi" }
+            { keys: ["kichi kichi", "kichi"], brand: "kichikichi" },
+            { keys: ["pizza hut", "pizzahut"], brand: "pizzahut" },
+            { keys: ["domino's", "domino", "dominos"], brand: "dominos" },
+            { keys: ["texas chicken", "texas"], brand: "texas" }
         ];
 
         // TỪ KHÓA MÓN ĂN ĐỂ DÒ MENU
-        const productsDB = ["matcha latte", "trà sữa", "cà phê", "hồng trà", "trà đào", "gà rán", "burger", "lẩu"];
+        const productsDB = ["matcha latte", "trà sữa", "cà phê", "hồng trà", "trà đào", "gà rán", "burger", "lẩu", "kem", "pizza", "thịt nướng"];
 
         let allKeys = [];
         placesDB.forEach(loc => { loc.keys.forEach(k => allKeys.push({ key: k, type: 'specific', data: loc, len: k.length })); });
@@ -1014,7 +1041,7 @@
             setTimeout(() => { sheet.classList.add('expanded'); }, 50);
 
             let content = '';
-            if (brand === 'ngogia' || brand === 'katinat' || brand === 'phuclong' || brand === 'tch' || brand === 'highlands' || brand === 'phela' || brand === 'koi' || brand === 'gongcha') {
+            if (brand === 'ngogia' || brand === 'katinat' || brand === 'phuclong' || brand === 'tch' || brand === 'highlands' || brand === 'phela' || brand === 'koi' || brand === 'gongcha' || brand === 'mixue') {
                 content = `
                     <h3 style="font-size: 18px; color: #E65100; margin-bottom: 5px;"><i class="fa-solid fa-mug-hot"></i> ${fullName}</h3>
                     <p style="font-size: 13px; color: gray; margin-bottom: 15px;">⭐ 4.8 (1,245 đánh giá) • Đang mở cửa</p>
@@ -1030,7 +1057,7 @@
                     <h4 style="font-size: 14px; margin-top: 10px; margin-bottom: 10px;">Đánh giá gần đây</h4>
                     <div style="background: #F8F9FA; padding: 10px; border-radius: 10px; font-size: 12px; margin-bottom: 10px;"><strong>Anh Tú</strong> ⭐⭐⭐⭐⭐<br>Trà sữa đậm vị, trân châu dai ngon.</div>
                 `;
-            } else if (brand === 'haidilao' || brand === 'kfc' || brand === 'mcdonalds' || brand === 'gogi' || brand === 'kichikichi') {
+            } else if (brand === 'haidilao' || brand === 'kfc' || brand === 'mcdonalds' || brand === 'gogi' || brand === 'kichikichi' || brand === 'pizzahut' || brand === 'dominos' || brand === 'texas') {
                 content = `
                     <h3 style="font-size: 18px; color: #D84315; margin-bottom: 5px;"><i class="fa-solid fa-utensils"></i> ${fullName}</h3>
                     <p style="font-size: 13px; color: gray; margin-bottom: 15px;">⭐ 4.6 (2,105 đánh giá) • Đang mở cửa</p>
@@ -1041,7 +1068,7 @@
                     <h4 style="font-size: 14px; margin-top: 10px; margin-bottom: 10px;">Đánh giá gần đây</h4>
                     <div style="background: #F8F9FA; padding: 10px; border-radius: 10px; font-size: 12px; margin-bottom: 10px;"><strong>Đức Trí</strong> ⭐⭐⭐⭐⭐<br>Đồ ăn ngon, phục vụ rất nhiệt tình chu đáo.</div>
                 `;
-            } else if (brand === 'bhx' || brand === 'coop' || brand === 'emart') {
+            } else if (brand === 'bhx' || brand === 'coop' || brand === 'emart' || brand === 'lotte' || brand === 'circlek' || brand === 'gs25') {
                 content = `
                     <h3 style="font-size: 18px; color: #2E7D32; margin-bottom: 5px;"><i class="fa-solid fa-basket-shopping"></i> ${fullName}</h3>
                     <p style="font-size: 13px; color: gray; margin-bottom: 15px;">⭐ 4.5 (890 đánh giá) • Siêu thị / Cửa hàng</p>
