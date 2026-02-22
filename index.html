@@ -661,6 +661,9 @@
             let coordString = coordsArr.map(c => `${c[1]},${c[0]}`).join(';');
             let attempt = 0;
             let currentCoords = [...coordsArr];
+            
+            let forcedDetourTraffic = false;
+            let forcedDetourFlood = false;
 
             while(attempt < 2) {
                 coordString = currentCoords.map(c => `${c[1]},${c[0]}`).join(';');
@@ -671,7 +674,11 @@
                         let path = data.routes[0].geometry.coordinates.map(c => [c[1], c[0]]);
                         let distance = data.routes[0].distance / 1000;
                         
-                        let stopTime = (currentCoords.length - 2) * 5; 
+                        let baseStopCount = currentCoords.length - 2;
+                        if (forcedDetourTraffic) baseStopCount--;
+                        if (forcedDetourFlood) baseStopCount--;
+                        
+                        let stopTime = baseStopCount * 5; 
                         if (stopTime < 0) stopTime = 0;
                         
                         let trafficZone = [10.7680, 106.6680]; 
@@ -682,37 +689,37 @@
                         
                         // Quét xem đường có cắt qua vùng kẹt/ngập không
                         for(let i=0; i<path.length; i+=3) {
-                            if(!hasTraffic && getDistance(path[i], trafficZone) < 0.25) {
+                            if(!hasTraffic && !forcedDetourTraffic && getDistance(path[i], trafficZone) < 0.25) {
                                 hasTraffic = true;
                             }
-                            if(!hasFlood && getDistance(path[i], floodZone) < 0.25) {
+                            if(!hasFlood && !forcedDetourFlood && getDistance(path[i], floodZone) < 0.25) {
                                 hasFlood = true;
                             }
                         }
 
                         let needsReroute = false;
                         
-                        // Nếu đang ở lần thử đầu tiên và dính "chưởng" + Người dùng muốn Tránh -> Chèn tọa độ đường vòng!
                         if (attempt === 0) {
                             if (hasTraffic && avoidTraffic) {
-                                // Gắn một tọa độ "kéo" đường đi ra hướng Sư Vạn Hạnh để né Lăng Cha Cả
-                                currentCoords.splice(1, 0, [10.7710, 106.6620]); 
+                                // Gắn một tọa độ "kéo" đường đi ra xa Vùng kẹt xe
+                                currentCoords.splice(1, 0, [10.7740, 106.6610]); 
+                                forcedDetourTraffic = true;
                                 needsReroute = true;
                             }
                             if (hasFlood && avoidFlood) {
-                                // Gắn một tọa độ "kéo" đường đi né xa QL50
+                                // Gắn một tọa độ kéo xa vùng ngập
                                 currentCoords.splice(currentCoords.length > 2 ? 2 : 1, 0, [10.7580, 106.6680]);
+                                forcedDetourFlood = true;
                                 needsReroute = true;
                             }
                         }
 
-                        // Nếu cần tìm đường khác, reset lại vòng lặp gọi API
                         if (needsReroute) {
                             attempt++;
                             continue; 
                         }
                         
-                        // Tính toán thời gian phạt nếu VẪN dính kẹt xe (do không thể né hoặc không chọn né)
+                        // Xóa cảnh báo nếu đã bật bộ lọc và ứng dụng đã chủ động đi vòng thành công
                         if (hasTraffic) {
                             penaltyTime += 15; 
                             warnings.push("Đi qua điểm kẹt xe (+15p)");
