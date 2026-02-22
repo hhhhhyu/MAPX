@@ -84,7 +84,7 @@
         .filter-options { display: flex; gap: 8px; flex-wrap: wrap; }
         .filter-pill { padding: 8px 15px; background: #F5F5F5; border-radius: 20px; font-size: 13px; color: #424242; cursor: pointer; border: 1px solid #E0E0E0; transition: 0.2s; display: flex; align-items: center; gap: 6px; user-select: none;}
         .filter-pill.active { background: #E3F2FD; color: #1565C0; border-color: #90CAF9; font-weight: bold;}
-        .apply-filter-btn { width: 100%; background: var(--text-blue); color: white; border: none; padding: 12px; border-radius: 12px; font-size: 14px; font-weight: bold; cursor: pointer; margin-top: 10px; box-shadow: 0 4px 10px rgba(21, 101, 192, 0.3); display: flex; justify-content: center; gap: 8px; align-items: center;}
+        .apply-filter-btn { width: 100%; background: var(--text-blue); color: white; border: none; padding: 12px; border-radius: 12px; font-size: 14px; font-weight: bold; cursor: margin-top: 10px; box-shadow: 0 4px 10px rgba(21, 101, 192, 0.3); display: flex; justify-content: center; gap: 8px; align-items: center;}
 
         .dynamic-tag { padding: 6px 12px; border-radius: 15px; font-size: 11px; font-weight: bold; display: flex; align-items: center; gap: 5px; white-space: nowrap;}
         .tag-shop { background: #FFF3E0; color: #E65100; border: 1px solid #FFE0B2; }
@@ -644,7 +644,6 @@
         let currentActiveRoutesData = [];
         let currentlySelectedRoute = null;
 
-        // ================= HÀM KẾT NỐI VỆ TINH =================
         async function getRealRoute(coordsArr, forceAvoidTraffic = false, forceAvoidFlood = false) {
             let currentCoords = [...coordsArr];
             
@@ -699,7 +698,6 @@
             return { path, distance: dist, duration: Math.round(dist * 4) + ((coordsArr.length-2)*5), warnings: [], hasTraffic: false, hasFlood: false };
         }
 
-        // ================= HÀM SINH RA 2 TUYẾN ĐƯỜNG ĐỂ SO SÁNH =================
         async function generateRoutes(waypoints, dest) {
             let personalFilters = getActiveFilters();
             let avoidTraffic = personalFilters.some(f => f.toLowerCase().includes('tránh kẹt xe'));
@@ -880,7 +878,6 @@
             }
 
             if (wantTimeLimit && bestFullDuration > timeLimit) {
-                // Kiểm tra xem đi thẳng có kịp không
                 let directPts = [startPoint, mainDest.coords];
                 let dBase = await getRealRoute(directPts, false, false);
                 let dDur = dBase.duration;
@@ -920,11 +917,10 @@
                             tDur = Math.min(tDur, tDet.duration);
                         }
                         
-                        // Khi đã tìm được cấu hình cắt bớt điểm sao cho tDur <= timeLimit, GỌI generateRoutes để sinh lộ trình (với điểm đã cắt)
                         if (tDur <= timeLimit) {
                             routesToRender = await generateRoutes(optimalWaypoints, mainDest);
                             routesToRender.forEach(r => {
-                                r.name = r.name.replace("Tuyến đường AI Tối ưu", "Tuyến Kịp Giờ").replace("Tuyến vòng (Né", "Tuyến Kịp Giờ (Né").replace("Tuyến gốc", "Tuyến Kịp Giờ (Gốc)");
+                                r.name = r.name.replace("Tuyến đường AI Tối ưu", "Tuyến Kịp Giờ").replace("Tuyến vòng (Né kẹt/ngập)", "Tuyến Kịp Giờ (Né)").replace("Tuyến gốc (Xuyên qua ùn tắc)", "Tuyến Kịp Giờ (Xuyên kẹt)");
                                 r.pro = "Đạt mục tiêu < " + formatTime(timeLimit) + ". " + r.pro;
                                 r.con = `Bỏ qua ${droppedNames.join(', ')}. ` + r.con;
                                 r.warn = (r.warn + ` Đã bỏ qua ${droppedNames.join(', ')} để kịp giờ.`).trim();
@@ -937,7 +933,7 @@
                     if (!foundValid) {
                         routesToRender = await generateRoutes(optimalWaypoints, mainDest);
                         routesToRender.forEach(r => {
-                            r.name = r.name.replace("Tuyến đường AI Tối ưu", "Tuyến Giữ Điểm Bắt Buộc").replace("Tuyến vòng", "Tuyến Bắt Buộc (Vòng)").replace("Tuyến gốc", "Tuyến Bắt Buộc (Gốc)");
+                            r.name = r.name.replace("Tuyến đường AI Tối ưu", "Tuyến Giữ Điểm Bắt Buộc").replace("Tuyến vòng (Né kẹt/ngập)", "Tuyến Bắt Buộc (Né)").replace("Tuyến gốc (Xuyên qua ùn tắc)", "Tuyến Bắt Buộc (Xuyên kẹt)");
                             r.pro = "Giữ lại điểm bắt buộc. " + r.pro;
                             r.con = (droppedNames.length > 0 ? `Đã bỏ ${droppedNames.join(', ')} nhưng vẫn trễ.` : 'Trễ giờ do điểm bắt buộc.') + " " + r.con;
                             r.warn = (`Trễ ${formatTime(r.duration - timeLimit)}. ` + r.warn).trim();
@@ -945,7 +941,6 @@
                     }
                 }
                 
-                // Vẫn hiện 1 thẻ "Tuyến đầy đủ ban đầu" (Bị trễ) ở dưới cùng để người dùng biết mình đã lỡ những gì
                 let fullRoutes = await generateRoutes(parsedWaypoints, mainDest);
                 let fullBest = fullRoutes[0]; 
                 fullBest.id = routesToRender.length + 1;
@@ -1085,7 +1080,7 @@
             else { warnBox.style.display = 'none'; }
         }
 
-        function startNavigation() {
+        async function startNavigation() {
             if (!currentlySelectedRoute) return;
             document.querySelectorAll('.bottom-sheet').forEach(sheet => { sheet.classList.add('hidden'); });
             document.getElementById('topBar').classList.add('hidden');
@@ -1112,6 +1107,16 @@
             document.getElementById('navDist').innerText = currentlySelectedRoute.dist + ' • Tới lúc ' + getArrivalTime(mins);
 
             map.flyTo(startPoint, 17, { animate: true, duration: 1.5 });
+            
+            // Vẽ lại Overlay đứt khúc cong theo vệ tinh để khi lái xe người dùng thấy rõ
+            trafficLayer.clearLayers();
+            let floodData = await getRealRoute([[10.7626, 106.6615], [10.7626, 106.6655]], false, false);
+            L.polyline(floodData.path, {color: '#00BCD4', weight: 8, opacity: 0.9, dashArray: '10, 10'}).addTo(trafficLayer);
+            L.marker(floodData.path[Math.floor(floodData.path.length / 2)], {icon: L.divIcon({html: '<div style="background:#0097A7;color:white;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 0 5px rgba(0,0,0,0.5); border: 2px solid white;"><i class="fa-solid fa-water" style="font-size:10px;"></i></div>'})}).addTo(trafficLayer);
+
+            let trafficData = await getRealRoute([[10.7680, 106.6665], [10.7680, 106.6697]], false, false);
+            L.polyline(trafficData.path, {color: '#FF7043', weight: 8, opacity: 0.9, dashArray: '10, 10'}).addTo(trafficLayer);
+            L.marker(trafficData.path[Math.floor(trafficData.path.length / 2)], {icon: L.divIcon({html: '<div style="background:#D84315;color:white;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 0 5px rgba(0,0,0,0.5); border: 2px solid white;"><i class="fa-solid fa-car-burst" style="font-size:10px;"></i></div>'})}).addTo(trafficLayer);
         }
 
         function endNavigation() {
@@ -1123,6 +1128,8 @@
             if (bNav) bNav.classList.remove('hidden');
             document.getElementById('floatingTools').classList.remove('hidden');
             document.getElementById('sheetAIFilter').classList.remove('hidden');
+            
+            trafficLayer.clearLayers();
 
             if(currentlySelectedRoute) {
                 map.fitBounds(L.polyline(currentlySelectedRoute.coords).getBounds(), {padding: [50, 50]});
@@ -1204,12 +1211,18 @@
             document.querySelectorAll('.bottom-sheet').forEach(sheet => { if (!sheet.classList.contains('hidden')) { sheet.classList.remove('expanded'); sheet.classList.add('minimized'); } });
         });
 
-        function showTrafficOverlay() {
+        async function showTrafficOverlay() {
             trafficLayer.clearLayers();
-            L.polyline([[10.7626, 106.6615], [10.7626, 106.6655]], {color: '#1565C0', weight: 8, opacity: 0.8}).addTo(trafficLayer);
-            L.marker([10.7626, 106.6635], {icon: L.divIcon({html: '<div style="background:#1565C0;color:white;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 0 5px rgba(0,0,0,0.5);"><i class="fa-solid fa-water" style="font-size:10px;"></i></div>'})}).addTo(trafficLayer);
-            L.polyline([[10.7680, 106.6665], [10.7680, 106.6697]], {color: '#C62828', weight: 8, opacity: 0.8}).addTo(trafficLayer);
-            L.marker([10.7680, 106.6680], {icon: L.divIcon({html: '<div style="background:#C62828;color:white;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 0 5px rgba(0,0,0,0.5);"><i class="fa-solid fa-car-burst" style="font-size:10px;"></i></div>'})}).addTo(trafficLayer);
+            
+            let floodData = await getRealRoute([[10.7626, 106.6615], [10.7626, 106.6655]], false, false);
+            L.polyline(floodData.path, {color: '#00BCD4', weight: 8, opacity: 0.9, dashArray: '10, 10'}).addTo(trafficLayer);
+            let fMid = floodData.path[Math.floor(floodData.path.length / 2)];
+            L.marker(fMid, {icon: L.divIcon({html: '<div style="background:#0097A7;color:white;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 0 5px rgba(0,0,0,0.5); border: 2px solid white;"><i class="fa-solid fa-water" style="font-size:10px;"></i></div>'})}).addTo(trafficLayer);
+
+            let trafficData = await getRealRoute([[10.7680, 106.6665], [10.7680, 106.6697]], false, false);
+            L.polyline(trafficData.path, {color: '#FF7043', weight: 8, opacity: 0.9, dashArray: '10, 10'}).addTo(trafficLayer);
+            let tMid = trafficData.path[Math.floor(trafficData.path.length / 2)];
+            L.marker(tMid, {icon: L.divIcon({html: '<div style="background:#D84315;color:white;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 0 5px rgba(0,0,0,0.5); border: 2px solid white;"><i class="fa-solid fa-car-burst" style="font-size:10px;"></i></div>'})}).addTo(trafficLayer);
         }
 
         function switchNav(tab) {
