@@ -309,7 +309,7 @@
             <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 15px; overflow-x: auto; padding-bottom: 5px;" id="dynamicTagsContainer"></div>
             
             <h3 style="font-size: 15px; margin-bottom: 10px; color: #424242;">Lộ trình Đề xuất</h3>
-            <p style="font-size: 11px; color: #1565C0; margin-top: -5px; margin-bottom: 10px;">💡 Bấm vào Lộ trình (đường kẻ) trên bản đồ để xem lại danh sách này.</p>
+            <p style="font-size: 11px; color: #1565C0; margin-top: -5px; margin-bottom: 10px;">💡 Bấm vào Lộ trình để xem lại danh sách và xem đường đi.</p>
             <div id="dynamicRoutesContainer"></div>
 
             <div class="start-nav-btn" id="startNavBtn" onclick="startNavigation()"><i class="fa-solid fa-location-arrow"></i> Bắt đầu Dẫn đường</div>
@@ -457,13 +457,11 @@
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
-        // Load Google Map font
         var link = document.createElement('link');
         link.href = 'https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap';
         link.rel = 'stylesheet';
         document.head.appendChild(link);
 
-        // --- CHUYỂN ĐỔI THỜI GIAN THÔNG MINH ---
         function formatTime(minutes) {
             if (!minutes) return "0p";
             if (minutes < 60) return minutes + 'p';
@@ -503,7 +501,6 @@
             }
         }
 
-        // TÙY CHỈNH
         function toggleRadioPill(element) {
             const parent = element.parentElement;
             Array.from(parent.children).forEach(el => el.classList.remove('active'));
@@ -536,7 +533,6 @@
             switchTopMode('ai');
         }
 
-        // BẢN ĐỒ GOOGLE MAPS
         var map = L.map('mapScreen', { zoomControl: false }).setView([10.7626, 106.6601], 14);
         L.tileLayer('http://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', { maxZoom: 19, subdomains:['mt0','mt1','mt2','mt3'] }).addTo(map);
 
@@ -561,7 +557,6 @@
             return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
         }
 
-        // ================= MEGA DICTIONARY VỚI MENU TÍCH HỢP SẴN =================
         const placesDB = [
             { keys: ["kinh tế cơ sở b", "ueh cơ sở b", "cơ sở b"], name: "UEH Cơ sở B", coords: [10.7731, 106.6697], icon: "fa-graduation-cap", color: "#C62828", brand: "ueh" },
             { keys: ["ueh cơ sở a", "cơ sở a"], name: "UEH Cơ sở A", coords: [10.7828, 106.6953], icon: "fa-graduation-cap", color: "#C62828", brand: "ueh" },
@@ -569,7 +564,6 @@
             { keys: ["ueh cơ sở e", "cơ sở e", "bình chánh"], name: "UEH Cơ sở E", coords: [10.7698, 106.6950], icon: "fa-graduation-cap", color: "#C62828", brand: "ueh" },
             { keys: ["ueh cơ sở c", "cơ sở c"], name: "UEH Cơ sở C", coords: [10.7735, 106.6785], icon: "fa-graduation-cap", color: "#C62828", brand: "ueh" },
             
-            // Trà sữa / Cafe
             { keys: ["ngô gia sư vạn hạnh", "ngô gia quận 10", "ngo gia"], name: "Ngô Gia Sư Vạn Hạnh", coords: [10.7750, 106.6680], icon: "fa-mug-hot", color: "#E65100", brand: "ngogia", menu: ["trà sữa", "hồng trà", "trà đào"] },
             { keys: ["ngô gia nguyễn tri phương", "ngô gia q10"], name: "Ngô Gia Nguyễn Tri Phương", coords: [10.7680, 106.6655], icon: "fa-mug-hot", color: "#E65100", brand: "ngogia", menu: ["trà sữa", "hồng trà", "trà đào"] },
             { keys: ["katinat bến bạch đằng", "katinat bạch đằng"], name: "Katinat Bến Bạch Đằng", coords: [10.7710, 106.7060], icon: "fa-mug-hot", color: "#E65100", brand: "katinat", menu: ["trà sữa", "matcha latte", "cà phê", "trà đào"] },
@@ -584,7 +578,6 @@
             { keys: ["the coffee house sư vạn hạnh", "tch sư vạn hạnh"], name: "The Coffee House SVH", coords: [10.7740, 106.6675], icon: "fa-mug-hot", color: "#E65100", brand: "tch", menu: ["cà phê", "trà đào", "trà sữa"] },
             { keys: ["mixue nguyễn tri phương", "mixue"], name: "Mixue NTP", coords: [10.7660, 106.6660], icon: "fa-ice-cream", color: "#E65100", brand: "mixue", menu: ["trà sữa", "kem", "hồng trà"] },
 
-            // Siêu thị / TTTM
             { keys: ["bách hóa xanh phạm hùng", "bhx phạm hùng"], name: "BHX Phạm Hùng", coords: [10.7350, 106.6650], icon: "fa-basket-shopping", color: "#2E7D32", brand: "bhx" },
             { keys: ["bách hóa xanh nguyễn văn cừ", "bhx nguyễn văn cừ"], name: "BHX Nguyễn Văn Cừ", coords: [10.7600, 106.6850], icon: "fa-basket-shopping", color: "#2E7D32", brand: "bhx" },
             { keys: ["bách hóa xanh 3/2", "bhx 3/2", "ba tháng hai"], name: "BHX Đường 3/2", coords: [10.7650, 106.6600], icon: "fa-basket-shopping", color: "#2E7D32", brand: "bhx" },
@@ -598,7 +591,6 @@
             { keys: ["circle k", "circlek"], name: "Circle K", coords: [10.7630, 106.6630], icon: "fa-store", color: "#D32F2F", brand: "circlek", menu: ["cà phê", "trà sữa"] },
             { keys: ["gs25"], name: "GS25", coords: [10.7650, 106.6650], icon: "fa-store", color: "#1976D2", brand: "gs25", menu: ["cà phê"] },
 
-            // Nhà hàng / Fastfood
             { keys: ["haidilao bitexco", "haidilao"], name: "Haidilao Bitexco", coords: [10.7715, 106.7045], icon: "fa-utensils", color: "#D84315", brand: "haidilao", menu: ["lẩu"] },
             { keys: ["kfc nguyễn tri phương", "kfc"], name: "KFC Nguyễn Tri Phương", coords: [10.7650, 106.6670], icon: "fa-burger", color: "#D84315", brand: "kfc", menu: ["gà rán", "burger"] },
             { keys: ["mcdonald's bến thành", "mcdonald", "mc donald"], name: "McDonald's Bến Thành", coords: [10.7718, 106.6985], icon: "fa-burger", color: "#D84315", brand: "mcdonalds", menu: ["gà rán", "burger", "khoai tây chiên"] },
@@ -608,7 +600,6 @@
             { keys: ["domino's", "domino", "dominos"], name: "Domino's Pizza", coords: [10.7690, 106.6630], icon: "fa-pizza-slice", color: "#D84315", brand: "dominos", menu: ["pizza"] },
             { keys: ["texas chicken", "texas"], name: "Texas Chicken", coords: [10.7670, 106.6660], icon: "fa-burger", color: "#D84315", brand: "texas", menu: ["gà rán", "burger"] },
 
-            // Điểm khác
             { keys: ["phố đi bộ nguyễn huệ", "phố đi bộ", "nguyễn huệ"], name: "Phố đi bộ Nguyễn Huệ", coords: [10.7743, 106.7031], icon: "fa-city", color: "#6A1B9A", brand: "landmark" },
             { keys: ["landmark 81", "landmark", "81"], name: "Landmark 81", coords: [10.7950, 106.7218], icon: "fa-building", color: "#0288D1", brand: "landmark" },
             { keys: ["chợ bến thành", "bến thành"], name: "Chợ Bến Thành", coords: [10.7725, 106.6980], icon: "fa-shop", color: "#D84315", brand: "landmark" }
@@ -653,91 +644,48 @@
         let currentActiveRoutesData = [];
         let currentlySelectedRoute = null;
 
-        // ================= HÀM KẾT NỐI VỆ TINH LẤY TỌA ĐỘ ĐƯỜNG THỰC TẾ & TÍNH TOÁN BẤT LỢI =================
-        async function getRealRoute(coordsArr, filters = []) {
-            let avoidTraffic = filters.some(f => f.toLowerCase().includes('tránh kẹt xe'));
-            let avoidFlood = filters.some(f => f.toLowerCase().includes('tránh ngập lụt'));
-
-            let coordString = coordsArr.map(c => `${c[1]},${c[0]}`).join(';');
-            let attempt = 0;
+        // ================= HÀM KẾT NỐI VỆ TINH =================
+        async function getRealRoute(coordsArr, forceAvoidTraffic = false, forceAvoidFlood = false) {
             let currentCoords = [...coordsArr];
             
-            let forcedDetourTraffic = false;
-            let forcedDetourFlood = false;
+            if (forceAvoidTraffic) { currentCoords.splice(1, 0, [10.7740, 106.6610]); }
+            if (forceAvoidFlood) { currentCoords.splice(currentCoords.length > 2 ? 2 : 1, 0, [10.7580, 106.6680]); }
 
-            while(attempt < 2) {
-                coordString = currentCoords.map(c => `${c[1]},${c[0]}`).join(';');
-                try {
-                    let res = await fetch(`https://router.project-osrm.org/route/v1/driving/${coordString}?overview=full&geometries=geojson&continue_straight=true`);
-                    let data = await res.json();
-                    if(data.code === 'Ok' && data.routes.length > 0) {
-                        let path = data.routes[0].geometry.coordinates.map(c => [c[1], c[0]]);
-                        let distance = data.routes[0].distance / 1000;
-                        
-                        let baseStopCount = currentCoords.length - 2;
-                        if (forcedDetourTraffic) baseStopCount--;
-                        if (forcedDetourFlood) baseStopCount--;
-                        
-                        let stopTime = baseStopCount * 5; 
-                        if (stopTime < 0) stopTime = 0;
-                        
-                        let trafficZone = [10.7680, 106.6680]; 
-                        let floodZone = [10.7626, 106.6635];   
-                        let penaltyTime = 0;
-                        let warnings = [];
-                        let hasTraffic = false, hasFlood = false;
-                        
-                        // Quét xem đường có cắt qua vùng kẹt/ngập không
-                        for(let i=0; i<path.length; i+=3) {
-                            if(!hasTraffic && !forcedDetourTraffic && getDistance(path[i], trafficZone) < 0.25) {
-                                hasTraffic = true;
-                            }
-                            if(!hasFlood && !forcedDetourFlood && getDistance(path[i], floodZone) < 0.25) {
-                                hasFlood = true;
-                            }
-                        }
-
-                        let needsReroute = false;
-                        
-                        if (attempt === 0) {
-                            if (hasTraffic && avoidTraffic) {
-                                // Gắn một tọa độ "kéo" đường đi ra xa Vùng kẹt xe
-                                currentCoords.splice(1, 0, [10.7740, 106.6610]); 
-                                forcedDetourTraffic = true;
-                                needsReroute = true;
-                            }
-                            if (hasFlood && avoidFlood) {
-                                // Gắn một tọa độ kéo xa vùng ngập
-                                currentCoords.splice(currentCoords.length > 2 ? 2 : 1, 0, [10.7580, 106.6680]);
-                                forcedDetourFlood = true;
-                                needsReroute = true;
-                            }
-                        }
-
-                        if (needsReroute) {
-                            attempt++;
-                            continue; 
-                        }
-                        
-                        // Xóa cảnh báo nếu đã bật bộ lọc và ứng dụng đã chủ động đi vòng thành công
-                        if (hasTraffic) {
-                            penaltyTime += 15; 
-                            warnings.push("Đi qua điểm kẹt xe (+15p)");
-                        }
-                        if (hasFlood) {
-                            penaltyTime += 10; 
-                            warnings.push("Đi qua điểm ngập (+10p)");
-                        }
-                        
-                        let duration = Math.round(data.routes[0].duration / 60) + stopTime + penaltyTime;
-                        
-                        return { path, distance, duration, warnings };
+            let coordString = currentCoords.map(c => `${c[1]},${c[0]}`).join(';');
+            try {
+                let res = await fetch(`https://router.project-osrm.org/route/v1/driving/${coordString}?overview=full&geometries=geojson&continue_straight=true`);
+                let data = await res.json();
+                if(data.code === 'Ok' && data.routes.length > 0) {
+                    let path = data.routes[0].geometry.coordinates.map(c => [c[1], c[0]]);
+                    let distance = data.routes[0].distance / 1000;
+                    
+                    let baseStopCount = currentCoords.length - 2; 
+                    if (forceAvoidTraffic) baseStopCount--;
+                    if (forceAvoidFlood) baseStopCount--;
+                    
+                    let stopTime = baseStopCount * 5; 
+                    if (stopTime < 0) stopTime = 0;
+                    
+                    let trafficZone = [10.7680, 106.6680]; 
+                    let floodZone = [10.7626, 106.6635];   
+                    let penaltyTime = 0;
+                    let warnings = [];
+                    let hasTraffic = false, hasFlood = false;
+                    
+                    for(let i=0; i<path.length; i+=3) {
+                        if(!hasTraffic && !forceAvoidTraffic && getDistance(path[i], trafficZone) < 0.25) hasTraffic = true;
+                        if(!hasFlood && !forceAvoidFlood && getDistance(path[i], floodZone) < 0.25) hasFlood = true;
                     }
-                } catch(e) { console.error("Lỗi vệ tinh: ", e); break; }
-                attempt++;
-            }
+                    
+                    if (hasTraffic) { penaltyTime += 15; warnings.push("Đi qua điểm kẹt xe (+15p)"); }
+                    if (hasFlood) { penaltyTime += 10; warnings.push("Đi qua điểm ngập (+10p)"); }
+                    
+                    let duration = Math.round(data.routes[0].duration / 60) + stopTime + penaltyTime;
+                    
+                    return { path, distance, duration, warnings, hasTraffic, hasFlood };
+                }
+            } catch(e) { console.error("Lỗi vệ tinh: ", e); }
             
-            // Hệ thống dự phòng nếu rớt mạng
             let path = [coordsArr[0]];
             for(let i=1; i<coordsArr.length; i++) {
                 let prev = path[path.length-1];
@@ -748,7 +696,55 @@
             }
             let dist = 0;
             for(let i=0; i<coordsArr.length-1; i++) dist += getDistance(coordsArr[i], coordsArr[i+1]);
-            return { path, distance: dist, duration: Math.round(dist * 4) + ((coordsArr.length-2)*5), warnings: [] };
+            return { path, distance: dist, duration: Math.round(dist * 4) + ((coordsArr.length-2)*5), warnings: [], hasTraffic: false, hasFlood: false };
+        }
+
+        // ================= HÀM SINH RA 2 TUYẾN ĐƯỜNG ĐỂ SO SÁNH =================
+        async function generateRoutes(waypoints, dest) {
+            let personalFilters = getActiveFilters();
+            let avoidTraffic = personalFilters.some(f => f.toLowerCase().includes('tránh kẹt xe'));
+            let avoidFlood = personalFilters.some(f => f.toLowerCase().includes('tránh ngập lụt'));
+
+            let points = [startPoint, ...waypoints.map(wp => wp.coords), dest.coords];
+            let baseData = await getRealRoute(points, false, false);
+            let results = [];
+            
+            if (baseData.hasTraffic || baseData.hasFlood) {
+                let detourData = await getRealRoute(points, baseData.hasTraffic && avoidTraffic, baseData.hasFlood && avoidFlood);
+                let timeDiff = detourData.duration - baseData.duration;
+                let timeDiffStr = timeDiff > 0 ? `Chậm hơn ${formatTime(timeDiff)}` : `Tiết kiệm ${formatTime(Math.abs(timeDiff))}`;
+                
+                results.push({
+                    id: 1, name: 'Tuyến vòng (Né kẹt/ngập) ' + (timeDiff <= 0 ? '⭐' : ''),
+                    time: formatTime(detourData.duration), dist: detourData.distance.toFixed(1) + ' km',
+                    coords: detourData.path, points: waypoints, dest: dest,
+                    pro: `Đường thông thoáng. ${timeDiff < 0 ? 'Nhanh hơn.' : ''}`, 
+                    con: timeDiff > 0 ? `Đi vòng xa hơn (${timeDiffStr}).` : 'Đổi trục đường.',
+                    warn: '', duration: detourData.duration
+                });
+                
+                results.push({
+                    id: 2, name: 'Tuyến gốc (Xuyên qua ùn tắc)',
+                    time: formatTime(baseData.duration), dist: baseData.distance.toFixed(1) + ' km',
+                    coords: baseData.path, points: waypoints, dest: dest,
+                    pro: 'Đi trục đường chính.',
+                    con: baseData.warnings.join(', '),
+                    warn: baseData.warnings.join(', '), duration: baseData.duration
+                });
+                
+                results.sort((a, b) => a.duration - b.duration);
+                results[0].id = 1; results[1].id = 2; 
+            } else {
+                results.push({
+                    id: 1, name: 'Tuyến đường AI Tối ưu',
+                    time: formatTime(baseData.duration), dist: baseData.distance.toFixed(1) + ' km',
+                    coords: baseData.path, points: waypoints, dest: dest,
+                    pro: 'Đáp ứng toàn bộ yêu cầu.',
+                    con: 'Đường thông thoáng.',
+                    warn: '', duration: baseData.duration
+                });
+            }
+            return results;
         }
 
         async function parseAndRouteAI() {
@@ -761,7 +757,7 @@
             sheetAIFilter.classList.remove('hidden', 'expanded', 'minimized'); 
             
             const routesContainer = document.getElementById('dynamicRoutesContainer');
-            routesContainer.innerHTML = '<div style="padding: 30px 20px; text-align: center; color: #1565C0;"><i class="fa-solid fa-satellite-dish fa-fade fa-2x" style="margin-bottom:15px;"></i><h4 style="font-size: 15px; margin-bottom: 5px;">Đang kết nối Vệ tinh...</h4><p style="font-size: 13px; color: gray;">Quét mặt đường thực tế và sắp xếp tuyến đường tối ưu nhất.</p></div>';
+            routesContainer.innerHTML = '<div style="padding: 30px 20px; text-align: center; color: #1565C0;"><i class="fa-solid fa-satellite-dish fa-fade fa-2x" style="margin-bottom:15px;"></i><h4 style="font-size: 15px; margin-bottom: 5px;">Đang tính toán ma trận giao thông...</h4><p style="font-size: 13px; color: gray;">Quét thời gian và cắt tỉa địa điểm ưu tiên...</p></div>';
             document.getElementById('startNavBtn').style.display = 'none';
 
             let foundItems = [];
@@ -853,10 +849,7 @@
                 let minDistToNext = Infinity;
                 for (let i = 0; i < poolOfWps.length; i++) {
                     let d = getDistance(currentLocForSort, poolOfWps[i].coords);
-                    if (d < minDistToNext) {
-                        minDistToNext = d;
-                        nearestIdx = i;
-                    }
+                    if (d < minDistToNext) { minDistToNext = d; nearestIdx = i; }
                 }
                 sortedWps.push(poolOfWps[nearestIdx]);
                 currentLocForSort = poolOfWps[nearestIdx].coords;
@@ -871,74 +864,99 @@
             let vehicleEl = document.querySelector('#filterTransport .filter-pill.active');
             let vehicle = vehicleEl ? vehicleEl.innerText : "Xe máy";
             let personalFilters = getActiveFilters(); 
+            let avoidTraffic = personalFilters.some(f => f.toLowerCase().includes('tránh kẹt xe'));
+            let avoidFlood = personalFilters.some(f => f.toLowerCase().includes('tránh ngập lụt'));
 
             let routesToRender = [];
             
+            // TÍNH THỜI GIAN ĐỂ BIẾT CÓ CẦN BỎ ĐIỂM HAY KHÔNG
             let allPointsFull = [startPoint, ...parsedWaypoints.map(wp => wp.coords), mainDest.coords];
-            let fullRouteData = await getRealRoute(allPointsFull, personalFilters);
+            let baseFullData = await getRealRoute(allPointsFull, false, false);
+            let bestFullDuration = baseFullData.duration;
             
-            let fullDistance = fullRouteData.distance;
-            let fullTime = fullRouteData.duration;
-            let fullWarnings = fullRouteData.warnings;
+            if (baseFullData.hasTraffic || baseFullData.hasFlood) {
+                let detData = await getRealRoute(allPointsFull, baseFullData.hasTraffic && avoidTraffic, baseFullData.hasFlood && avoidFlood);
+                if (detData.duration < bestFullDuration) bestFullDuration = detData.duration;
+            }
 
-            if (wantTimeLimit && fullTime > timeLimit) {
-                let directRouteData = await getRealRoute([startPoint, mainDest.coords], personalFilters);
-                let directDist = directRouteData.distance;
-                let directTime = directRouteData.duration;
+            if (wantTimeLimit && bestFullDuration > timeLimit) {
+                // Kiểm tra xem đi thẳng có kịp không
+                let directPts = [startPoint, mainDest.coords];
+                let dBase = await getRealRoute(directPts, false, false);
+                let dDur = dBase.duration;
+                if (dBase.hasTraffic || dBase.hasFlood) {
+                    let dDet = await getRealRoute(directPts, dBase.hasTraffic && avoidTraffic, dBase.hasFlood && avoidFlood);
+                    if(dDet.duration < dDur) dDur = dDet.duration;
+                }
 
-                if (directTime > timeLimit) {
-                    routesToRender.push({ 
-                        id: 1, name: `Tuyến nhanh nhất có thể`, time: formatTime(directTime), dist: directDist.toFixed(1) + ' km', coords: directRouteData.path, points: [], dest: mainDest, 
-                        pro: 'Đi thẳng một mạch tới đích.', con: `Phải bỏ qua TOÀN BỘ điểm ghé.`, warn: ('Khoảng cách quá xa không thể kịp giờ. ' + directRouteData.warnings.join(', ')).trim()
+                if (dDur > timeLimit) {
+                    routesToRender = await generateRoutes([], mainDest);
+                    routesToRender.forEach(r => {
+                        r.name = "Tuyến thẳng (Vẫn trễ giờ)";
+                        r.pro = "Đi thẳng một mạch tới đích.";
+                        r.con = "Bỏ qua TOÀN BỘ điểm ghé.";
+                        r.warn = ("Khoảng cách quá xa không thể kịp giờ. " + r.warn).trim();
                     });
                 } else {
                     let optimalWaypoints = [...parsedWaypoints];
                     let droppedNames = [];
-                    let foundValidRoute = false;
-
+                    let foundValid = false;
+                    
                     while (optimalWaypoints.length > 0) {
                         let worstIdx = -1;
                         for (let i = optimalWaypoints.length - 1; i >= 0; i--) {
                             if (!optimalWaypoints[i].isMandatory) { worstIdx = i; break; }
                         }
                         if (worstIdx === -1) break; 
-
+                        
                         let dropped = optimalWaypoints.splice(worstIdx, 1)[0];
                         droppedNames.push(dropped.name.split(' (')[0]);
-
-                        let testPoints = [startPoint, ...optimalWaypoints.map(wp=>wp.coords), mainDest.coords];
-                        let testRouteData = await getRealRoute(testPoints, personalFilters);
-                        let testTime = testRouteData.duration;
-
-                        if (testTime <= timeLimit) {
-                            routesToRender.push({ 
-                                id: 1, name: `Tuyến ưu tiên (<${formatTime(timeLimit)})`, time: formatTime(testTime), dist: testRouteData.distance.toFixed(1) + ' km', coords: testRouteData.path, points: optimalWaypoints, dest: mainDest,
-                                pro: 'Đạt mục tiêu thời gian.', con: `Đã bỏ qua ${droppedNames.join(', ')}.`, warn: testRouteData.warnings.join(', ') || `Tự động bỏ qua để tránh trễ giờ`
+                        
+                        let pts = [startPoint, ...optimalWaypoints.map(wp=>wp.coords), mainDest.coords];
+                        let tBase = await getRealRoute(pts, false, false);
+                        let tDur = tBase.duration;
+                        if (tBase.hasTraffic || tBase.hasFlood) {
+                            let tDet = await getRealRoute(pts, tBase.hasTraffic && avoidTraffic, tBase.hasFlood && avoidFlood);
+                            tDur = Math.min(tDur, tDet.duration);
+                        }
+                        
+                        // Khi đã tìm được cấu hình cắt bớt điểm sao cho tDur <= timeLimit, GỌI generateRoutes để sinh lộ trình (với điểm đã cắt)
+                        if (tDur <= timeLimit) {
+                            routesToRender = await generateRoutes(optimalWaypoints, mainDest);
+                            routesToRender.forEach(r => {
+                                r.name = r.name.replace("Tuyến đường AI Tối ưu", "Tuyến Kịp Giờ").replace("Tuyến vòng (Né", "Tuyến Kịp Giờ (Né").replace("Tuyến gốc", "Tuyến Kịp Giờ (Gốc)");
+                                r.pro = "Đạt mục tiêu < " + formatTime(timeLimit) + ". " + r.pro;
+                                r.con = `Bỏ qua ${droppedNames.join(', ')}. ` + r.con;
+                                r.warn = (r.warn + ` Đã bỏ qua ${droppedNames.join(', ')} để kịp giờ.`).trim();
                             });
-                            foundValidRoute = true;
+                            foundValid = true;
                             break;
                         }
                     }
                     
-                    if (!foundValidRoute) {
-                        let testPoints = [startPoint, ...optimalWaypoints.map(wp=>wp.coords), mainDest.coords];
-                        let testRouteData = await getRealRoute(testPoints, personalFilters);
-                        routesToRender.push({ 
-                            id: 1, name: `Tuyến Giữ Điểm Bắt Buộc`, time: formatTime(testRouteData.duration), dist: testRouteData.distance.toFixed(1) + ' km', coords: testRouteData.path, points: optimalWaypoints, dest: mainDest,
-                            pro: 'Giữ lại các điểm bạn yêu cầu bắt buộc.', con: droppedNames.length > 0 ? `Đã bỏ ${droppedNames.join(', ')} nhưng vẫn trễ.` : 'Trễ giờ do điểm bắt buộc.', warn: (`Sẽ bị trễ ${formatTime(testRouteData.duration - timeLimit)}. ` + testRouteData.warnings.join(', ')).trim()
+                    if (!foundValid) {
+                        routesToRender = await generateRoutes(optimalWaypoints, mainDest);
+                        routesToRender.forEach(r => {
+                            r.name = r.name.replace("Tuyến đường AI Tối ưu", "Tuyến Giữ Điểm Bắt Buộc").replace("Tuyến vòng", "Tuyến Bắt Buộc (Vòng)").replace("Tuyến gốc", "Tuyến Bắt Buộc (Gốc)");
+                            r.pro = "Giữ lại điểm bắt buộc. " + r.pro;
+                            r.con = (droppedNames.length > 0 ? `Đã bỏ ${droppedNames.join(', ')} nhưng vẫn trễ.` : 'Trễ giờ do điểm bắt buộc.') + " " + r.con;
+                            r.warn = (`Trễ ${formatTime(r.duration - timeLimit)}. ` + r.warn).trim();
                         });
                     }
                 }
-
-                routesToRender.push({ 
-                    id: 2, name: 'Tuyến ghé đầy đủ', time: formatTime(fullTime), dist: fullDistance.toFixed(1) + ' km', coords: fullRouteData.path, points: parsedWaypoints, dest: mainDest,
-                    pro: 'Ghé đủ tất cả yêu cầu.', con: 'Trễ thời gian quy định.', warn: (`Sẽ bị trễ ${formatTime(fullTime - timeLimit)}. ` + fullWarnings.join(', ')).trim()
-                });
+                
+                // Vẫn hiện 1 thẻ "Tuyến đầy đủ ban đầu" (Bị trễ) ở dưới cùng để người dùng biết mình đã lỡ những gì
+                let fullRoutes = await generateRoutes(parsedWaypoints, mainDest);
+                let fullBest = fullRoutes[0]; 
+                fullBest.id = routesToRender.length + 1;
+                fullBest.name = 'Tuyến ghé đầy đủ (Bị trễ)';
+                fullBest.pro = 'Ghé đủ yêu cầu ban đầu.';
+                fullBest.con = `Bị trễ ${formatTime(fullBest.duration - timeLimit)}.`;
+                fullBest.warn = (`Cảnh báo trễ giờ! ` + fullBest.warn).trim();
+                routesToRender.push(fullBest);
+                
             } else {
-                routesToRender.push({ 
-                    id: 1, name: 'Tuyến đường AI Tối ưu', time: formatTime(fullTime), dist: fullDistance.toFixed(1) + ' km', coords: fullRouteData.path, points: parsedWaypoints, dest: mainDest,
-                    pro: 'Đáp ứng toàn bộ yêu cầu.', con: 'Đường đi thông thoáng.', warn: fullWarnings.join(', ')
-                });
+                routesToRender = await generateRoutes(parsedWaypoints, mainDest);
             }
 
             currentActiveRoutesData = routesToRender;
