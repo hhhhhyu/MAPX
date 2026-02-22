@@ -457,11 +457,13 @@
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
+        // Load Google Map font
         var link = document.createElement('link');
         link.href = 'https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap';
         link.rel = 'stylesheet';
         document.head.appendChild(link);
 
+        // --- CHUYỂN ĐỔI THỜI GIAN THÔNG MINH ---
         function formatTime(minutes) {
             if (!minutes) return "0p";
             if (minutes < 60) return minutes + 'p';
@@ -501,6 +503,7 @@
             }
         }
 
+        // TÙY CHỈNH
         function toggleRadioPill(element) {
             const parent = element.parentElement;
             Array.from(parent.children).forEach(el => el.classList.remove('active'));
@@ -533,6 +536,7 @@
             switchTopMode('ai');
         }
 
+        // BẢN ĐỒ GOOGLE MAPS
         var map = L.map('mapScreen', { zoomControl: false }).setView([10.7626, 106.6601], 14);
         L.tileLayer('http://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', { maxZoom: 19, subdomains:['mt0','mt1','mt2','mt3'] }).addTo(map);
 
@@ -557,6 +561,7 @@
             return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
         }
 
+        // ================= MEGA DICTIONARY VỚI MENU TÍCH HỢP SẴN =================
         const placesDB = [
             { keys: ["kinh tế cơ sở b", "ueh cơ sở b", "cơ sở b"], name: "UEH Cơ sở B", coords: [10.7731, 106.6697], icon: "fa-graduation-cap", color: "#C62828", brand: "ueh" },
             { keys: ["ueh cơ sở a", "cơ sở a"], name: "UEH Cơ sở A", coords: [10.7828, 106.6953], icon: "fa-graduation-cap", color: "#C62828", brand: "ueh" },
@@ -564,6 +569,7 @@
             { keys: ["ueh cơ sở e", "cơ sở e", "bình chánh"], name: "UEH Cơ sở E", coords: [10.7698, 106.6950], icon: "fa-graduation-cap", color: "#C62828", brand: "ueh" },
             { keys: ["ueh cơ sở c", "cơ sở c"], name: "UEH Cơ sở C", coords: [10.7735, 106.6785], icon: "fa-graduation-cap", color: "#C62828", brand: "ueh" },
             
+            // Trà sữa / Cafe
             { keys: ["ngô gia sư vạn hạnh", "ngô gia quận 10", "ngo gia"], name: "Ngô Gia Sư Vạn Hạnh", coords: [10.7750, 106.6680], icon: "fa-mug-hot", color: "#E65100", brand: "ngogia", menu: ["trà sữa", "hồng trà", "trà đào"] },
             { keys: ["ngô gia nguyễn tri phương", "ngô gia q10"], name: "Ngô Gia Nguyễn Tri Phương", coords: [10.7680, 106.6655], icon: "fa-mug-hot", color: "#E65100", brand: "ngogia", menu: ["trà sữa", "hồng trà", "trà đào"] },
             { keys: ["katinat bến bạch đằng", "katinat bạch đằng"], name: "Katinat Bến Bạch Đằng", coords: [10.7710, 106.7060], icon: "fa-mug-hot", color: "#E65100", brand: "katinat", menu: ["trà sữa", "matcha latte", "cà phê", "trà đào"] },
@@ -578,6 +584,7 @@
             { keys: ["the coffee house sư vạn hạnh", "tch sư vạn hạnh"], name: "The Coffee House SVH", coords: [10.7740, 106.6675], icon: "fa-mug-hot", color: "#E65100", brand: "tch", menu: ["cà phê", "trà đào", "trà sữa"] },
             { keys: ["mixue nguyễn tri phương", "mixue"], name: "Mixue NTP", coords: [10.7660, 106.6660], icon: "fa-ice-cream", color: "#E65100", brand: "mixue", menu: ["trà sữa", "kem", "hồng trà"] },
 
+            // Siêu thị / TTTM
             { keys: ["bách hóa xanh phạm hùng", "bhx phạm hùng"], name: "BHX Phạm Hùng", coords: [10.7350, 106.6650], icon: "fa-basket-shopping", color: "#2E7D32", brand: "bhx" },
             { keys: ["bách hóa xanh nguyễn văn cừ", "bhx nguyễn văn cừ"], name: "BHX Nguyễn Văn Cừ", coords: [10.7600, 106.6850], icon: "fa-basket-shopping", color: "#2E7D32", brand: "bhx" },
             { keys: ["bách hóa xanh 3/2", "bhx 3/2", "ba tháng hai"], name: "BHX Đường 3/2", coords: [10.7650, 106.6600], icon: "fa-basket-shopping", color: "#2E7D32", brand: "bhx" },
@@ -591,6 +598,7 @@
             { keys: ["circle k", "circlek"], name: "Circle K", coords: [10.7630, 106.6630], icon: "fa-store", color: "#D32F2F", brand: "circlek", menu: ["cà phê", "trà sữa"] },
             { keys: ["gs25"], name: "GS25", coords: [10.7650, 106.6650], icon: "fa-store", color: "#1976D2", brand: "gs25", menu: ["cà phê"] },
 
+            // Nhà hàng / Fastfood
             { keys: ["haidilao bitexco", "haidilao"], name: "Haidilao Bitexco", coords: [10.7715, 106.7045], icon: "fa-utensils", color: "#D84315", brand: "haidilao", menu: ["lẩu"] },
             { keys: ["kfc nguyễn tri phương", "kfc"], name: "KFC Nguyễn Tri Phương", coords: [10.7650, 106.6670], icon: "fa-burger", color: "#D84315", brand: "kfc", menu: ["gà rán", "burger"] },
             { keys: ["mcdonald's bến thành", "mcdonald", "mc donald"], name: "McDonald's Bến Thành", coords: [10.7718, 106.6985], icon: "fa-burger", color: "#D84315", brand: "mcdonalds", menu: ["gà rán", "burger", "khoai tây chiên"] },
@@ -600,6 +608,7 @@
             { keys: ["domino's", "domino", "dominos"], name: "Domino's Pizza", coords: [10.7690, 106.6630], icon: "fa-pizza-slice", color: "#D84315", brand: "dominos", menu: ["pizza"] },
             { keys: ["texas chicken", "texas"], name: "Texas Chicken", coords: [10.7670, 106.6660], icon: "fa-burger", color: "#D84315", brand: "texas", menu: ["gà rán", "burger"] },
 
+            // Điểm khác
             { keys: ["phố đi bộ nguyễn huệ", "phố đi bộ", "nguyễn huệ"], name: "Phố đi bộ Nguyễn Huệ", coords: [10.7743, 106.7031], icon: "fa-city", color: "#6A1B9A", brand: "landmark" },
             { keys: ["landmark 81", "landmark", "81"], name: "Landmark 81", coords: [10.7950, 106.7218], icon: "fa-building", color: "#0288D1", brand: "landmark" },
             { keys: ["chợ bến thành", "bến thành"], name: "Chợ Bến Thành", coords: [10.7725, 106.6980], icon: "fa-shop", color: "#D84315", brand: "landmark" }
@@ -644,40 +653,84 @@
         let currentActiveRoutesData = [];
         let currentlySelectedRoute = null;
 
-        async function getRealRoute(coordsArr) {
+        // ================= HÀM KẾT NỐI VỆ TINH LẤY TỌA ĐỘ ĐƯỜNG THỰC TẾ & TÍNH TOÁN BẤT LỢI =================
+        async function getRealRoute(coordsArr, filters = []) {
+            let avoidTraffic = filters.some(f => f.toLowerCase().includes('tránh kẹt xe'));
+            let avoidFlood = filters.some(f => f.toLowerCase().includes('tránh ngập lụt'));
+
             let coordString = coordsArr.map(c => `${c[1]},${c[0]}`).join(';');
-            try {
-                let res = await fetch(`https://router.project-osrm.org/route/v1/driving/${coordString}?overview=full&geometries=geojson`);
-                let data = await res.json();
-                if(data.code === 'Ok' && data.routes.length > 0) {
-                    let path = data.routes[0].geometry.coordinates.map(c => [c[1], c[0]]);
-                    let distance = data.routes[0].distance / 1000;
-                    
-                    let stopTime = (coordsArr.length - 2) * 5; 
-                    if (stopTime < 0) stopTime = 0;
-                    
-                    let trafficZone = [10.7680, 106.6680]; 
-                    let floodZone = [10.7626, 106.6635];   
-                    let penaltyTime = 0;
-                    let warnings = [];
-                    let hasTraffic = false, hasFlood = false;
-                    
-                    for(let i=0; i<path.length; i+=3) {
-                        if(!hasTraffic && getDistance(path[i], trafficZone) < 0.25) {
-                            penaltyTime += 15; hasTraffic = true;
+            let attempt = 0;
+            let currentCoords = [...coordsArr];
+
+            while(attempt < 2) {
+                coordString = currentCoords.map(c => `${c[1]},${c[0]}`).join(';');
+                try {
+                    let res = await fetch(`https://router.project-osrm.org/route/v1/driving/${coordString}?overview=full&geometries=geojson&continue_straight=true`);
+                    let data = await res.json();
+                    if(data.code === 'Ok' && data.routes.length > 0) {
+                        let path = data.routes[0].geometry.coordinates.map(c => [c[1], c[0]]);
+                        let distance = data.routes[0].distance / 1000;
+                        
+                        let stopTime = (currentCoords.length - 2) * 5; 
+                        if (stopTime < 0) stopTime = 0;
+                        
+                        let trafficZone = [10.7680, 106.6680]; 
+                        let floodZone = [10.7626, 106.6635];   
+                        let penaltyTime = 0;
+                        let warnings = [];
+                        let hasTraffic = false, hasFlood = false;
+                        
+                        // Quét xem đường có cắt qua vùng kẹt/ngập không
+                        for(let i=0; i<path.length; i+=3) {
+                            if(!hasTraffic && getDistance(path[i], trafficZone) < 0.25) {
+                                hasTraffic = true;
+                            }
+                            if(!hasFlood && getDistance(path[i], floodZone) < 0.25) {
+                                hasFlood = true;
+                            }
+                        }
+
+                        let needsReroute = false;
+                        
+                        // Nếu đang ở lần thử đầu tiên và dính "chưởng" + Người dùng muốn Tránh -> Chèn tọa độ đường vòng!
+                        if (attempt === 0) {
+                            if (hasTraffic && avoidTraffic) {
+                                // Gắn một tọa độ "kéo" đường đi ra hướng Sư Vạn Hạnh để né Lăng Cha Cả
+                                currentCoords.splice(1, 0, [10.7710, 106.6620]); 
+                                needsReroute = true;
+                            }
+                            if (hasFlood && avoidFlood) {
+                                // Gắn một tọa độ "kéo" đường đi né xa QL50
+                                currentCoords.splice(currentCoords.length > 2 ? 2 : 1, 0, [10.7580, 106.6680]);
+                                needsReroute = true;
+                            }
+                        }
+
+                        // Nếu cần tìm đường khác, reset lại vòng lặp gọi API
+                        if (needsReroute) {
+                            attempt++;
+                            continue; 
+                        }
+                        
+                        // Tính toán thời gian phạt nếu VẪN dính kẹt xe (do không thể né hoặc không chọn né)
+                        if (hasTraffic) {
+                            penaltyTime += 15; 
                             warnings.push("Đi qua điểm kẹt xe (+15p)");
                         }
-                        if(!hasFlood && getDistance(path[i], floodZone) < 0.25) {
-                            penaltyTime += 10; hasFlood = true;
+                        if (hasFlood) {
+                            penaltyTime += 10; 
                             warnings.push("Đi qua điểm ngập (+10p)");
                         }
+                        
+                        let duration = Math.round(data.routes[0].duration / 60) + stopTime + penaltyTime;
+                        
+                        return { path, distance, duration, warnings };
                     }
-                    
-                    let duration = Math.round(data.routes[0].duration / 60) + stopTime + penaltyTime;
-                    return { path, distance, duration, warnings };
-                }
-            } catch(e) { console.error("Lỗi vệ tinh: ", e); }
+                } catch(e) { console.error("Lỗi vệ tinh: ", e); break; }
+                attempt++;
+            }
             
+            // Hệ thống dự phòng nếu rớt mạng
             let path = [coordsArr[0]];
             for(let i=1; i<coordsArr.length; i++) {
                 let prev = path[path.length-1];
@@ -784,7 +837,7 @@
                 }
             });
 
-            // THUẬT TOÁN NEAREST NEIGHBOR (Tối ưu quãng đường, chống chạy lòng vòng)
+            // THUẬT TOÁN NEAREST NEIGHBOR 
             let sortedWps = [];
             let currentLocForSort = startPoint;
             let poolOfWps = [...parsedWaypoints];
@@ -810,18 +863,19 @@
 
             let vehicleEl = document.querySelector('#filterTransport .filter-pill.active');
             let vehicle = vehicleEl ? vehicleEl.innerText : "Xe máy";
+            let personalFilters = getActiveFilters(); 
 
             let routesToRender = [];
             
             let allPointsFull = [startPoint, ...parsedWaypoints.map(wp => wp.coords), mainDest.coords];
-            let fullRouteData = await getRealRoute(allPointsFull);
+            let fullRouteData = await getRealRoute(allPointsFull, personalFilters);
             
             let fullDistance = fullRouteData.distance;
             let fullTime = fullRouteData.duration;
             let fullWarnings = fullRouteData.warnings;
 
             if (wantTimeLimit && fullTime > timeLimit) {
-                let directRouteData = await getRealRoute([startPoint, mainDest.coords]);
+                let directRouteData = await getRealRoute([startPoint, mainDest.coords], personalFilters);
                 let directDist = directRouteData.distance;
                 let directTime = directRouteData.duration;
 
@@ -846,7 +900,7 @@
                         droppedNames.push(dropped.name.split(' (')[0]);
 
                         let testPoints = [startPoint, ...optimalWaypoints.map(wp=>wp.coords), mainDest.coords];
-                        let testRouteData = await getRealRoute(testPoints);
+                        let testRouteData = await getRealRoute(testPoints, personalFilters);
                         let testTime = testRouteData.duration;
 
                         if (testTime <= timeLimit) {
@@ -861,7 +915,7 @@
                     
                     if (!foundValidRoute) {
                         let testPoints = [startPoint, ...optimalWaypoints.map(wp=>wp.coords), mainDest.coords];
-                        let testRouteData = await getRealRoute(testPoints);
+                        let testRouteData = await getRealRoute(testPoints, personalFilters);
                         routesToRender.push({ 
                             id: 1, name: `Tuyến Giữ Điểm Bắt Buộc`, time: formatTime(testRouteData.duration), dist: testRouteData.distance.toFixed(1) + ' km', coords: testRouteData.path, points: optimalWaypoints, dest: mainDest,
                             pro: 'Giữ lại các điểm bạn yêu cầu bắt buộc.', con: droppedNames.length > 0 ? `Đã bỏ ${droppedNames.join(', ')} nhưng vẫn trễ.` : 'Trễ giờ do điểm bắt buộc.', warn: (`Sẽ bị trễ ${formatTime(testRouteData.duration - timeLimit)}. ` + testRouteData.warnings.join(', ')).trim()
@@ -896,7 +950,6 @@
             });
             if(wantTimeLimit) tagContainer.innerHTML += `<div class="dynamic-tag tag-danger"><i class="fa-solid fa-stopwatch"></i> Dưới ${formatTime(timeLimit)}</div>`;
 
-            let personalFilters = getActiveFilters();
             personalFilters.forEach(text => {
                 let lowText = text.toLowerCase();
                 let tagClass = 'tag-vehicle'; 
