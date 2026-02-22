@@ -109,10 +109,8 @@
         .time-badge.alt { background: #757575; opacity: 0.8;}
         .time-badge.danger { background: #C62828; }
 
-        /* NÚT BẮT ĐẦU DẪN ĐƯỜNG DỊU MẮT */
         .start-nav-btn { background: #2E7D32; color: white; width: 100%; padding: 12px; border-radius: 12px; text-align: center; font-weight: bold; font-size: 14px; box-shadow: 0 4px 10px rgba(46, 125, 50, 0.3); margin-top: 10px; cursor: pointer; display: none;}
         
-        /* OVERLAY GIAO DIỆN LÁI XE */
         .nav-top-banner { position: absolute; top: env(safe-area-inset-top, 15px); left: 15px; right: 15px; background: #2E7D32; color: white; padding: 15px; border-radius: 15px; display: none; align-items: center; gap: 15px; z-index: 50; box-shadow: 0 4px 15px rgba(0,0,0,0.2); transition: 0.3s;}
         .nav-direction-icon { font-size: 26px; }
         .nav-instruction { flex: 1; }
@@ -129,14 +127,12 @@
         .menu-scroll::-webkit-scrollbar { display: none; }
         .menu-item { min-width: 120px; border: 1px solid #E0E0E0; border-radius: 10px; padding: 10px; text-align: center; }
 
-        /* CÀI ĐẶT (NHÓM A+) */
         .settings-screen { position: absolute; top: 0; left: 0; width: 100%; height: calc(100% - 70px - env(safe-area-inset-bottom)); background: #F5F5F5; z-index: 28; display: none; overflow-y: auto; padding-bottom: 20px;}
         .set-header { background: white; padding: 40px 20px 15px; text-align: center; position: sticky; top: 0; z-index: 29; box-shadow: 0 2px 5px rgba(0,0,0,0.05);}
         .set-card { background: white; margin: 15px; border-radius: 15px; padding: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.02);}
         .set-title { font-size: 15px; color: #1565C0; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid #F5F5F5; padding-bottom: 8px;}
         .team-badge { background: #FFF3E0; color: #E65100; border: 1px solid #FFE0B2; padding: 15px; border-radius: 12px; text-align: center; margin-top: 10px;}
 
-        /* Cộng đồng */
         .community-screen { position: absolute; top: 0; left: 0; width: 100%; height: calc(100% - 70px - env(safe-area-inset-bottom)); background: #F5F5F5; z-index: 28; display: none; overflow-y: auto; padding-bottom: 20px;}
         .comm-header { background: white; padding: 40px 20px 15px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 29; box-shadow: 0 2px 5px rgba(0,0,0,0.05);}
         .comm-tabs { display: flex; background: white; border-bottom: 1px solid #E0E0E0;}
@@ -301,7 +297,7 @@
             <p style="font-size: 12px; color: gray; margin-bottom: 10px; text-align: center;">Mẹo: Gõ "mua matcha latte", AI sẽ tự tìm quán tiện đường nhất.</p>
             
             <div class="ai-input-area">
-                <div class="ai-textarea" id="aiPromptBox" contenteditable="true">Đến UEH Cơ sở A muốn mua matcha latte trên đường đi, dưới 30 phút</div>
+                <div class="ai-textarea" id="aiPromptBox" contenteditable="true">Đến UEH Cơ sở A muốn mua matcha latte trên đường đi, dưới 40 phút</div>
                 <span class="ai-condition-text" id="aiInjectedConditions"><i class="fa-solid fa-wand-sparkles"></i> AI sẽ tự động phân tích menu và chọn quán...</span>
                 <div style="overflow: hidden; margin-top: 15px;"><div class="ai-send-btn" onclick="parseAndRouteAI()"><i class="fa-solid fa-arrow-up"></i></div></div>
             </div>
@@ -537,7 +533,6 @@
             switchTopMode('ai');
         }
 
-        // BẢN ĐỒ GOOGLE MAPS
         var map = L.map('mapScreen', { zoomControl: false }).setView([10.7626, 106.6601], 14);
         L.tileLayer('http://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', { maxZoom: 19, subdomains:['mt0','mt1','mt2','mt3'] }).addTo(map);
 
@@ -649,11 +644,9 @@
         let currentActiveRoutesData = [];
         let currentlySelectedRoute = null;
 
-        // ================= HÀM KẾT NỐI VỆ TINH LẤY TỌA ĐỘ ĐƯỜNG THỰC TẾ & TÍNH TOÁN BẤT LỢI =================
         async function getRealRoute(coordsArr) {
             let coordString = coordsArr.map(c => `${c[1]},${c[0]}`).join(';');
             try {
-                // Sử dụng OSRM Project (Dự án định tuyến mã nguồn mở) để lấy tọa độ mặt đường thực tế
                 let res = await fetch(`https://router.project-osrm.org/route/v1/driving/${coordString}?overview=full&geometries=geojson`);
                 let data = await res.json();
                 if(data.code === 'Ok' && data.routes.length > 0) {
@@ -663,9 +656,8 @@
                     let stopTime = (coordsArr.length - 2) * 5; 
                     if (stopTime < 0) stopTime = 0;
                     
-                    // Logic tính toán BẤT LỢI (Penalties) nếu đường đi cắt qua vùng ngập/kẹt xe
-                    let trafficZone = [10.7680, 106.6680]; // Lăng Cha Cả (Giả lập)
-                    let floodZone = [10.7626, 106.6635];   // QL50 (Giả lập)
+                    let trafficZone = [10.7680, 106.6680]; 
+                    let floodZone = [10.7626, 106.6635];   
                     let penaltyTime = 0;
                     let warnings = [];
                     let hasTraffic = false, hasFlood = false;
@@ -686,7 +678,6 @@
                 }
             } catch(e) { console.error("Lỗi vệ tinh: ", e); }
             
-            // Nếu API sập, dự phòng rớt về đường thẳng chim bay
             let path = [coordsArr[0]];
             for(let i=1; i<coordsArr.length; i++) {
                 let prev = path[path.length-1];
@@ -700,7 +691,6 @@
             return { path, distance: dist, duration: Math.round(dist * 4) + ((coordsArr.length-2)*5), warnings: [] };
         }
 
-        // ================= THUẬT TOÁN ĐỊNH TUYẾN THAM LAM (ASYNC - ĐÃ NÂNG CẤP) =================
         async function parseAndRouteAI() {
             let rawText = document.getElementById('aiPromptBox').innerText.toLowerCase();
             document.getElementById('sheetAI').classList.add('hidden');
@@ -710,9 +700,8 @@
             let sheetAIFilter = document.getElementById('sheetAIFilter');
             sheetAIFilter.classList.remove('hidden', 'expanded', 'minimized'); 
             
-            // Hiển thị UI Loading (Mới)
             const routesContainer = document.getElementById('dynamicRoutesContainer');
-            routesContainer.innerHTML = '<div style="padding: 30px 20px; text-align: center; color: #1565C0;"><i class="fa-solid fa-satellite-dish fa-fade fa-2x" style="margin-bottom:15px;"></i><h4 style="font-size: 15px; margin-bottom: 5px;">Đang kết nối Vệ tinh...</h4><p style="font-size: 13px; color: gray;">Quét mặt đường thực tế và tính toán bất lợi giao thông.</p></div>';
+            routesContainer.innerHTML = '<div style="padding: 30px 20px; text-align: center; color: #1565C0;"><i class="fa-solid fa-satellite-dish fa-fade fa-2x" style="margin-bottom:15px;"></i><h4 style="font-size: 15px; margin-bottom: 5px;">Đang kết nối Vệ tinh...</h4><p style="font-size: 13px; color: gray;">Quét mặt đường thực tế và sắp xếp tuyến đường tối ưu nhất.</p></div>';
             document.getElementById('startNavBtn').style.display = 'none';
 
             let foundItems = [];
@@ -795,6 +784,26 @@
                 }
             });
 
+            // THUẬT TOÁN NEAREST NEIGHBOR (Tối ưu quãng đường, chống chạy lòng vòng)
+            let sortedWps = [];
+            let currentLocForSort = startPoint;
+            let poolOfWps = [...parsedWaypoints];
+            while (poolOfWps.length > 0) {
+                let nearestIdx = 0;
+                let minDistToNext = Infinity;
+                for (let i = 0; i < poolOfWps.length; i++) {
+                    let d = getDistance(currentLocForSort, poolOfWps[i].coords);
+                    if (d < minDistToNext) {
+                        minDistToNext = d;
+                        nearestIdx = i;
+                    }
+                }
+                sortedWps.push(poolOfWps[nearestIdx]);
+                currentLocForSort = poolOfWps[nearestIdx].coords;
+                poolOfWps.splice(nearestIdx, 1);
+            }
+            parsedWaypoints = sortedWps;
+
             let timeMatch = rawText.match(/dưới (\d+) phút/) || rawText.match(/(\d+)p/) || rawText.match(/(\d+) phút/);
             let timeLimit = timeMatch ? parseInt(timeMatch[1]) : null;
             let wantTimeLimit = timeLimit !== null;
@@ -804,7 +813,6 @@
 
             let routesToRender = [];
             
-            // ----- BẮT ĐẦU TÍNH TOÁN BẰNG ĐƯỜNG THỰC TẾ (OSRM API) -----
             let allPointsFull = [startPoint, ...parsedWaypoints.map(wp => wp.coords), mainDest.coords];
             let fullRouteData = await getRealRoute(allPointsFull);
             
@@ -999,7 +1007,6 @@
             else { warnBox.style.display = 'none'; }
         }
 
-        // ================= TÍNH NĂNG BẮT ĐẦU DẪN ĐƯỜNG (DRIVE MODE) =================
         function startNavigation() {
             if (!currentlySelectedRoute) return;
             document.querySelectorAll('.bottom-sheet').forEach(sheet => { sheet.classList.add('hidden'); });
@@ -1108,7 +1115,6 @@
             document.getElementById('placeDetailsContent').innerHTML = content;
         }
 
-        // --- CÁC HÀM UI CƠ BẢN ---
         function toggleExpand(element) {
             const sheet = element.parentElement;
             if (!sheet.classList.contains('expanded') && !sheet.classList.contains('minimized')) { sheet.classList.add('minimized'); } 
